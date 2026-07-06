@@ -119,25 +119,44 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, 
   return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${removeBtn}</span>`;
 }
 
-// Seitenleiste mit allen verfügbaren Personen zum Reinziehen/Antippen. Personen, die laut
-// Arbeitszeit an diesem Tag frei haben, werden nur optisch markiert, nicht gesperrt.
+// Seitenleiste mit allen Personen zum Reinziehen/Antippen, aufgeteilt danach, ob sie laut
+// Arbeitszeitplan an diesem Tag überhaupt verfügbar sind. "Nicht da" sperrt das Zuordnen
+// nicht (z.B. spontane Vertretung), macht aber sichtbar, wer eigentlich frei hat.
 function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, weekdayKey) {
   _sidebarArgs = { container, staffIds, staffMap, workingHoursMap, weekdayKey };
 
-  let html = '<div class="staff-sidebar" onclick="sidebarAreaClick()" ondragover="roomGridAllowDrop(event)" ondrop="roomGridDropToSidebar(event)">';
-  html += '<h4>Verfügbares Personal</h4><p class="hint">Antippen zum Auswählen, dann Zielbereich antippen. Auf freie Stelle hier tippen entfernt jemanden aus der Einteilung.</p>';
-  staffIds.forEach(id => {
-    const s = staffMap[id];
-    if (!s) return;
+  function isAvailable(id) {
     const hours = (workingHoursMap[id] || {})[weekdayKey];
-    const frei = !!weekdayKey && (!hours || hours.frei);
+    return !(!!weekdayKey && (!hours || hours.frei));
+  }
+
+  function chipHtml(id) {
+    const s = staffMap[id];
+    const hours = (workingHoursMap[id] || {})[weekdayKey];
+    const frei = !isAvailable(id);
     const timeLabel = hours && !hours.frei ? `${hours.start}–${hours.end}` : "frei / nicht eingetragen";
     const selected = isSelected(id, "", "");
-    html += `<span class="chip chip-source ${frei ? "chip-conflict" : ""} ${selected ? "selected" : ""}" draggable="true"
+    return `<span class="chip chip-source ${frei ? "chip-conflict" : ""} ${selected ? "selected" : ""}" draggable="true"
                 onclick="chipClick(event, '${id}', '', '')"
                 ondragstart="roomGridDragStart(event, '${id}', '', '')"
                 title="${escAttr(timeLabel)}">${escapeHtml(s.name)}</span>`;
-  });
+  }
+
+  let html = '<div class="staff-sidebar" onclick="sidebarAreaClick()" ondragover="roomGridAllowDrop(event)" ondrop="roomGridDropToSidebar(event)">';
+  html += '<h4>Verfügbares Personal</h4><p class="hint">Antippen zum Auswählen, dann Zielbereich antippen. Auf freie Stelle hier tippen entfernt jemanden aus der Einteilung.</p>';
+
+  if (weekdayKey) {
+    const ids = staffIds.filter(id => staffMap[id]);
+    const available = ids.filter(isAvailable);
+    const unavailable = ids.filter(id => !isAvailable(id));
+    html += `<div class="sidebar-group-label">Verfügbar heute (${available.length})</div>`;
+    html += available.map(chipHtml).join("") || '<p class="hint">Niemand laut Plan verfügbar.</p>';
+    html += `<div class="sidebar-group-label">Laut Plan nicht da (${unavailable.length})</div>`;
+    html += unavailable.map(chipHtml).join("") || '<p class="hint">Alle verfügbar.</p>';
+  } else {
+    html += staffIds.filter(id => staffMap[id]).map(chipHtml).join("");
+  }
+
   html += "</div>";
   container.innerHTML = html;
 }
