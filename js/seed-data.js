@@ -1,4 +1,4 @@
-// Einmalig genutzte Startdaten aus dem Briefing "Offenes Mittagessen – Kita Hemmingen"
+// Einmalig genutzte Startdaten aus dem Briefing "Offenes Mittagessen – KiFaZ"
 // (Personal, Arbeitszeiten Stand 22.5.26, Raumplan Version B). Wird nur geschrieben,
 // wenn die Datenbank noch komplett leer ist (siehe seedIfEmpty unten) – bestehende
 // Änderungen des Nutzers werden dadurch nie überschrieben.

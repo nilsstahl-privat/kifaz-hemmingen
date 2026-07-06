@@ -1,4 +1,4 @@
-# Mittagsplaner – Kita Hemmingen
+# Mittagsplaner – KiFaZ
 
 Online-Tool für die Personalplanung beim offenen Mittagessen: Tagesübersicht, Wochenplanung
 per Drag & Drop, Personal- und Arbeitszeitenverwaltung.
@@ -8,11 +8,12 @@ Database genutzt (kostenlose Spark-Stufe reicht locker).
 
 ## Schriften & Icons
 
-Überschriften/Labels nutzen **Bebas Neue**, Fließtext **Mulish** (= Muli) – beides aktuell über
-Google Fonts eingebunden (`<link>` in jeder HTML-Datei), da die Original-Dateien (`Muli-*.woff2`)
-noch nicht im Projekt liegen. Icons kommen über Font Awesome (CDN). Sobald die lokalen
-`.woff2`-Dateien vorliegen, können sie in `css/` abgelegt und per `@font-face` eingebunden werden –
-die restlichen `font-family`-Angaben im CSS bleiben dabei unverändert.
+Überschriften/Labels nutzen **Bebas Neue**, Fließtext **Muli** – beide lokal eingebunden über
+`css/fonts.css` + `css/fonts/*.woff2` (keine Google-Fonts-/CDN-Abhängigkeit mehr, funktioniert
+auch offline). Icons: eine kleine, selbst gehostete Auswahl an Font-Awesome-Solid-Icons
+(`css/fonts/fa-solid-900.woff2`), nur für die aktuell genutzten Symbole. Neues Icon hinzufügen:
+in `css/fonts.css` eine Zeile `.fa-<name>::before { content: "\f..."; }` mit dem passenden
+FA6-Unicode-Codepoint ergänzen.
 
 ## Seiten
 
@@ -29,6 +30,10 @@ aber nicht zwischen Geräten/Personen geteilt.
 
 ## Einrichtung für den echten, gemeinsam genutzten Betrieb
 
+**Status:** lokal fertig eingerichtet und commited, aber noch **nicht** auf GitHub – das kann nur
+mit deinem GitHub-Account passieren. Für den gemeinsamen Test mit einer Kollegin sind beide
+Schritte (Firebase + GitHub Pages) nötig, sonst sieht sie nur ihre eigene, lokale Version.
+
 ### 1. Firebase-Projekt anlegen (kostenlos)
 
 1. Auf [console.firebase.google.com](https://console.firebase.google.com) ein neues Projekt anlegen
@@ -43,9 +48,13 @@ aber nicht zwischen Geräten/Personen geteilt.
 
 ### 2. Auf GitHub veröffentlichen
 
+1. Auf [github.com/new](https://github.com/new) ein neues, **leeres** Repository anlegen (kein
+   README/.gitignore ankreuzen, das haben wir schon lokal)
+2. Diese zwei Befehle im Projektordner ausführen (Terminal fragt beim Push nach GitHub-Login/Token,
+   falls noch nicht eingerichtet):
+
 ```bash
-git remote add origin https://github.com/DEIN-NUTZERNAME/kita-mittagsplaner.git
-git branch -M main
+git remote add origin https://github.com/DEIN-NUTZERNAME/kifaz-mittagsplaner.git
 git push -u origin main
 ```
 
