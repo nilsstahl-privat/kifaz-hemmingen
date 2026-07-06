@@ -22,21 +22,14 @@
 
   <div class="card">
     <h2 id="day-title">Tagesübersicht</h2>
-    <p class="muted">Zeigt die Raumeinteilung für heute (Wochenplan + eventuelle Tages-Ausnahmen). Im Bearbeiten-Modus kannst du per Drag &amp; Drop nur für heute umstellen, ohne den dauerhaften Wochenplan zu verändern.</p>
-    <button id="edit-toggle" class="btn secondary">Bearbeiten (heutige Ausnahme)</button>
+    <p class="muted">Nur für heute, ohne den dauerhaften Wochenplan zu verändern: Person per <strong>×</strong> am Chip rausnehmen (z.B. krank/verhindert), spontane Zusatzkräfte oder länger Bleibende per Drag &amp; Drop aus der Liste rechts in einen Raum/eine Schicht ziehen.</p>
   </div>
 
   <div id="day-content" class="card">
     <div class="layout-with-sidebar">
       <div id="room-grid"></div>
-      <div id="sidebar-wrap" style="display:none"><div id="sidebar"></div></div>
+      <div><div id="sidebar"></div></div>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>Anwesenheit heute</h2>
-    <p class="muted">Person als krank oder verhindert melden – sie wird aus der Einteilung ausgeblendet, bleibt aber sichtbar (durchgestrichen).</p>
-    <div id="absence-panel"></div>
   </div>
 </main>
 

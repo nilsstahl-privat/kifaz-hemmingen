@@ -8,7 +8,7 @@ Database genutzt (kostenlose Spark-Stufe reicht locker).
 
 ## Seiten
 
-- `index.html` – Tagesübersicht: heutige Raumeinteilung, Krank-/Verhindert-Meldungen, Tages-Ausnahmen
+- `index.html` – Tagesübersicht: heutige Raumeinteilung, direkt bearbeitbar (Person für heute raus per ×, spontane Zusatzkräfte oder länger Bleibende per Drag & Drop), ohne den Wochenplan zu verändern
 - `week.html` – Wochenübersicht & -planung: dauerhafter Wochenplan per Drag & Drop
 - `staff.html` – Personal anlegen/löschen, Arbeitszeiten pro Wochentag pflegen
 
@@ -60,8 +60,10 @@ nur, wenn die Datenbank noch komplett leer ist – bestehende Änderungen werden
 /staff/{staffId}                     name, gruppe, notiz, aktiv
 /workingHours/{staffId}/{mo..fr}      start, end, frei
 /weeklyTemplate/{mo..fr}/{a|b}/{raum} [staffId, ...]   – a = 11:45–13:00, b = ab 13:00
-/dailyOverrides/{datumISO}/absences/{staffId}          "krank" | "verhindert"
 /dailyOverrides/{datumISO}/assignments/{a|b}/{raum}     [staffId, ...] – Tages-Ausnahme
+                                                          (× am Chip = für heute raus, z.B.
+                                                          krank/verhindert; Drag & Drop = spontane
+                                                          Zusatzkraft oder länger Bleibende)
 ```
 
 ## Lokal starten

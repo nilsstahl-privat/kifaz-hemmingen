@@ -22,7 +22,7 @@ function isWorkingDuringShift(hours, shiftKey) {
 
 // opts = {
 //   weekdayKey, cells: {shiftKey: {roomKey: [staffId,...]}}, staffMap,
-//   workingHoursMap, absences: {staffId: "krank"|"verhindert"}, editable,
+//   workingHoursMap, editable,
 //   onDrop(shiftKey, roomKey, staffId), onRemove(shiftKey, roomKey, staffId)
 // }
 function renderRoomGrid(container, opts) {
@@ -30,7 +30,6 @@ function renderRoomGrid(container, opts) {
   const cells = opts.cells || {};
   const staffMap = opts.staffMap || {};
   const workingHoursMap = opts.workingHoursMap || {};
-  const absences = opts.absences || {};
   const weekdayKey = opts.weekdayKey;
   const editable = opts.editable !== false;
 
@@ -39,8 +38,7 @@ function renderRoomGrid(container, opts) {
     html += `<div class="shift-block"><h3>${shift.label}</h3><div class="room-rows">`;
     ROOMS.forEach(room => {
       const ids = (cells[shift.key] && cells[shift.key][room.key]) || [];
-      const presentCount = ids.filter(id => !absences[id]).length;
-      const understaffed = room.checkMin && presentCount > 0 && presentCount < MIN_PER_ROOM;
+      const understaffed = room.checkMin && ids.length > 0 && ids.length < MIN_PER_ROOM;
       html += `<div class="room-row ${understaffed ? "understaffed" : ""}"
                     ondragover="roomGridAllowDrop(event)"
                     ondrop="roomGridDrop(event, '${shift.key}', '${room.key}')">
@@ -53,7 +51,7 @@ function renderRoomGrid(container, opts) {
         if (!s) return;
         const hours = (workingHoursMap[id] || {})[weekdayKey];
         const conflict = !!weekdayKey && !isWorkingDuringShift(hours, shift.key);
-        html += renderChip(id, s, shift.key, room.key, conflict, absences[id], editable);
+        html += renderChip(id, s, shift.key, room.key, conflict, editable);
       });
       html += "</div></div>";
     });
@@ -63,22 +61,19 @@ function renderRoomGrid(container, opts) {
   container.innerHTML = html;
 }
 
-function renderChip(id, staff, shiftKey, roomKey, conflict, absentStatus, editable) {
+function renderChip(id, staff, shiftKey, roomKey, conflict, editable) {
   const classes = ["chip"];
   if (conflict) classes.push("chip-conflict");
-  if (absentStatus) classes.push("chip-absent");
   const dragAttrs = editable
     ? `draggable="true" ondragstart="roomGridDragStart(event, '${id}', '${shiftKey}', '${roomKey}')"`
     : "";
   const removeBtn = editable
-    ? `<button type="button" class="chip-remove" title="entfernen" onclick="roomGridRemoveClick('${shiftKey}','${roomKey}','${id}')">×</button>`
+    ? `<button type="button" class="chip-remove" title="Für heute raus (z.B. krank/verhindert)" onclick="roomGridRemoveClick('${shiftKey}','${roomKey}','${id}')">×</button>`
     : "";
   const title = conflict
     ? ` title="${escAttr("Laut Arbeitszeit an diesem Tag/in dieser Schicht eigentlich nicht da")}"`
     : "";
-  return `<span class="${classes.join(" ")}" ${dragAttrs}${title}>${escapeHtml(staff.name)}${
-    absentStatus ? ` (${absentStatus})` : ""
-  }${removeBtn}</span>`;
+  return `<span class="${classes.join(" ")}" ${dragAttrs}${title}>${escapeHtml(staff.name)}${removeBtn}</span>`;
 }
 
 // Seitenleiste mit allen verfügbaren Personen zum Reinziehen. Personen, die laut

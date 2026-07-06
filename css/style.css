@@ -1,15 +1,21 @@
 :root {
-  --color-bg: #f5f6f4;
+  /* Farben aus dem KIFAZ-Logo (Orange / Magenta / Gelb / Oliv + dunkles Anthrazit-Grün) */
+  --color-orange: #dd7a1f;
+  --color-magenta: #c41c7f;
+  --color-yellow: #f2c94c;
+  --color-olive: #b3ac74;
+  --color-dark: #24332b;
+
+  --color-bg: #f7f6f2;
   --color-card: #ffffff;
-  --color-border: #dfe3de;
-  --color-text: #2b2f2b;
-  --color-muted: #6b716a;
-  --color-primary: #3a7d5c;
-  --color-primary-dark: #2c5f45;
-  --color-warn: #b5471e;
-  --color-warn-bg: #fdecE4;
-  --color-conflict: #c98a1c;
-  --color-absent-bg: #f1f1f1;
+  --color-border: #e3ded0;
+  --color-text: var(--color-dark);
+  --color-muted: #6e6c5e;
+  --color-primary: var(--color-orange);
+  --color-primary-dark: var(--color-dark);
+  --color-warn: var(--color-magenta);
+  --color-warn-bg: #f9e6f1;
+  --color-conflict: #8a6d16;
   --radius: 10px;
 }
 
@@ -171,9 +177,9 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #e4efe8;
-  border: 1px solid #c3ddce;
-  color: var(--color-primary-dark);
+  background: #eeecd9;
+  border: 1px solid #d8d3ab;
+  color: #55522e;
   border-radius: 999px;
   padding: 4px 6px 4px 10px;
   font-size: 13px;
@@ -187,16 +193,9 @@ main {
 }
 
 .chip-conflict {
-  background: #fbecd2;
-  border-color: #eecb8c;
-  color: #7a5410;
-}
-
-.chip-absent {
-  background: var(--color-absent-bg);
-  border-color: var(--color-border);
-  color: var(--color-muted);
-  text-decoration: line-through;
+  background: #fdecc2;
+  border-color: #f0d488;
+  color: var(--color-conflict);
 }
 
 .chip-remove {
@@ -292,20 +291,6 @@ button.btn.danger {
 button.btn.small {
   padding: 4px 9px;
   font-size: 12px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  background: #e4efe8;
-  color: var(--color-primary-dark);
-}
-
-.badge.inactive {
-  background: var(--color-absent-bg);
-  color: var(--color-muted);
 }
 
 .muted { color: var(--color-muted); font-size: 13px; }

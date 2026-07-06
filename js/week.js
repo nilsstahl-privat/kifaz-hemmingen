@@ -40,7 +40,6 @@ function renderAll() {
     cells,
     staffMap,
     workingHoursMap,
-    absences: {},
     editable: true,
     onDrop: (shift, room, staffId) => addStaffToCell("weeklyTemplate/" + selectedDay, shift, room, staffId),
     onRemove: (shift, room, staffId) => removeStaffFromCell("weeklyTemplate/" + selectedDay, shift, room, staffId)

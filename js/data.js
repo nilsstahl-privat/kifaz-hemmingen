@@ -60,10 +60,6 @@ function deleteStaffEverywhere(staffId) {
     let changed = false;
     for (const date of Object.keys(overrides)) {
       const day = overrides[date] || {};
-      if (day.absences && day.absences[staffId] !== undefined) {
-        delete day.absences[staffId];
-        changed = true;
-      }
       const assignments = day.assignments || {};
       for (const shift of Object.keys(assignments)) {
         for (const room of Object.keys(assignments[shift] || {})) {
@@ -111,13 +107,4 @@ function ensureDailyAssignmentsInitialized(weekdayKey, dateISO) {
       return db.ref(overridePath).set(tSnap.val() || {});
     });
   });
-}
-
-function setAbsence(dateISO, staffId, status) {
-  // status: "krank" | "verhindert" | null (null = Meldung zurücknehmen)
-  if (status) {
-    db.ref("dailyOverrides/" + dateISO + "/absences/" + staffId).set(status);
-  } else {
-    db.ref("dailyOverrides/" + dateISO + "/absences/" + staffId).remove();
-  }
 }
