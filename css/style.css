@@ -6,17 +6,21 @@
   --color-olive: #b3ac74;
   --color-dark: #24332b;
 
-  --color-bg: #f7f6f2;
+  --color-bg: #f6f5f0;
   --color-card: #ffffff;
-  --color-border: #e3ded0;
+  --color-border: #e7e2d3;
   --color-text: var(--color-dark);
-  --color-muted: #6e6c5e;
+  --color-muted: #726f60;
   --color-primary: var(--color-orange);
   --color-primary-dark: var(--color-dark);
   --color-warn: var(--color-magenta);
-  --color-warn-bg: #f9e6f1;
+  --color-warn-bg: #fbe9f2;
   --color-conflict: #8a6d16;
-  --radius: 10px;
+  --radius: 14px;
+  --radius-sm: 9px;
+
+  --shadow-sm: 0 1px 2px rgba(36, 51, 43, 0.06), 0 1px 1px rgba(36, 51, 43, 0.04);
+  --shadow-md: 0 4px 14px rgba(36, 51, 43, 0.08), 0 1px 3px rgba(36, 51, 43, 0.06);
 
   --font-body: 'Muli', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: 'Bebas Neue', var(--font-body);
@@ -41,11 +45,14 @@ h1, h2, h3, .room-block-header, .tabs button, header.app-header nav a {
 header.app-header {
   background: var(--color-primary-dark);
   color: white;
-  padding: 14px 20px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   gap: 24px;
   flex-wrap: wrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  position: relative;
+  z-index: 1;
 }
 
 header.app-header h1 {
@@ -63,11 +70,12 @@ header.app-header nav a {
   color: white;
   text-decoration: none;
   padding: 8px 14px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 16px;
   opacity: 0.85;
   user-select: none;
   touch-action: manipulation;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 header.app-header nav a.active,
@@ -79,25 +87,27 @@ header.app-header nav a:hover {
 main {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
 }
 
 .fake-db-banner {
   background: #fff3cd;
   border: 1px solid #ffe08a;
   color: #6b5300;
-  padding: 8px 14px;
-  border-radius: var(--radius);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
 .card {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
 }
 
 .card h2 { margin-top: 0; }
@@ -111,21 +121,22 @@ main {
   border: 1px solid var(--color-primary);
   color: var(--color-primary-dark);
   padding: 10px 14px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 .tabs {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
 .tabs button {
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 999px;
   border: 1px solid var(--color-border);
   background: white;
@@ -133,18 +144,22 @@ main {
   font-size: 15px;
   user-select: none;
   touch-action: manipulation;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
+
+.tabs button:hover { background: #faf6ee; }
 
 .tabs button.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 .layout-with-sidebar {
   display: grid;
-  grid-template-columns: 1fr 220px;
-  gap: 16px;
+  grid-template-columns: 1fr 230px;
+  gap: 18px;
   align-items: start;
 }
 
@@ -156,26 +171,28 @@ main {
   }
 
   main {
-    padding: 14px;
+    padding: 16px 14px;
   }
 }
 
 .room-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .room-block {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 12px;
-  background: #fafbf9;
+  padding: 14px 16px;
+  background: var(--color-card);
+  box-shadow: var(--shadow-sm);
 }
 
 .room-block-header {
-  font-size: 16px;
-  margin-bottom: 8px;
+  font-size: 17px;
+  margin-bottom: 10px;
+  color: var(--color-primary-dark);
 }
 
 .room-block-shifts {
@@ -194,11 +211,12 @@ main {
 .shift-col {
   flex: 1;
   min-width: 0;
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius);
-  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
   min-height: 48px;
-  background: white;
+  background: #fbfaf6;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .shift-col.understaffed {
@@ -211,17 +229,19 @@ main {
   border-color: var(--color-primary);
   background: #fff8ef;
   cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(221, 122, 31, 0.12);
 }
 
 .shift-col-label {
   font-size: 12px;
   color: var(--color-muted);
   margin-bottom: 6px;
+  font-weight: 600;
 }
 
 .shift-col-label .warn {
   color: var(--color-warn);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .shift-col-chips {
@@ -240,15 +260,44 @@ main {
   border-radius: 999px;
   padding: 7px 8px 7px 12px;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   user-select: none;
   touch-action: manipulation;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
 }
 
-.chip-source {
-  background: #eef0ed;
-  border-color: var(--color-border);
-  color: var(--color-text);
+.chip:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Leichte Farbnuancen je Stammgruppe, damit auf einen Blick erkennbar ist,
+   woher jemand eigentlich kommt (Sonne/Wiese/Mond), auch wenn alle im
+   offenen Mittagessen gemischt sind. */
+.chip-group-sonne {
+  background: #fff2d6;
+  border-color: #f2dda0;
+  color: #7a5710;
+}
+
+.chip-group-wiese {
+  background: #e3f2e0;
+  border-color: #bde2b8;
+  color: #2f6b2a;
+}
+
+.chip-group-mond {
+  background: #e8ebfa;
+  border-color: #c6cff2;
+  color: #3a437d;
+}
+
+.chip-group-none {
+  background: #eeecd9;
+  border-color: #d8d3ab;
+  color: #55522e;
 }
 
 .chip-conflict {
@@ -259,7 +308,7 @@ main {
 
 /* Pool-Chips: noch mind. eine Schicht offen -> hervorgehoben. */
 .chip-open {
-  box-shadow: inset 3px 0 0 var(--color-primary);
+  box-shadow: var(--shadow-sm), inset 3px 0 0 var(--color-primary);
 }
 
 /* Pool-Chips: schon in beiden Schichten irgendwo eingeteilt -> nichts mehr zu tun. */
@@ -276,6 +325,7 @@ main {
 
 .chip-leaves {
   font-size: 11px;
+  font-weight: 500;
   opacity: 0.75;
   white-space: nowrap;
 }
@@ -284,6 +334,7 @@ main {
   border: none;
   background: transparent;
   color: inherit;
+  opacity: 0.6;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
@@ -293,7 +344,10 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.15s ease;
 }
+
+.chip-remove:hover { opacity: 1; }
 
 /* Reines Info-Badge (nicht klickbar) – wer heute laut Dropdown-Auswahl
    die Heimgehkinder-Abholung um 12:20 übernimmt. */
@@ -316,7 +370,9 @@ main {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .pickup-editor strong {
@@ -324,21 +380,23 @@ main {
 }
 
 .pickup-editor select {
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   font-size: 14px;
+  background: white;
 }
 
 .staff-sidebar {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 12px;
+  padding: 14px;
   background: var(--color-card);
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-height: 120px;
+  box-shadow: var(--shadow-sm);
 }
 
 .staff-sidebar h4 { margin: 0; font-size: 14px; }
@@ -368,7 +426,7 @@ table.staff-table {
 
 table.staff-table th, table.staff-table td {
   border-bottom: 1px solid var(--color-border);
-  padding: 8px 6px;
+  padding: 10px 6px;
   text-align: left;
   vertical-align: middle;
 }
@@ -394,21 +452,35 @@ table.hours-table input[type="time"] {
 }
 
 input[type="text"], select {
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   font-size: 14px;
+  background: white;
+}
+
+input[type="text"]:focus, select:focus, input[type="time"]:focus {
+  outline: 2px solid rgba(221, 122, 31, 0.4);
+  outline-offset: 1px;
 }
 
 button.btn {
-  padding: 9px 16px;
-  border-radius: 6px;
+  padding: 9px 18px;
+  border-radius: 999px;
   border: 1px solid var(--color-primary);
   background: var(--color-primary);
   color: white;
   cursor: pointer;
   font-size: 14px;
+  font-weight: 600;
   touch-action: manipulation;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+button.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 button.btn.secondary {
@@ -423,7 +495,7 @@ button.btn.danger {
 }
 
 button.btn.small {
-  padding: 4px 9px;
+  padding: 5px 11px;
   font-size: 12px;
 }
 

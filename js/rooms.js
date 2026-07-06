@@ -41,6 +41,11 @@ function earlyLeaveTime(hours, shiftKey) {
   return null;
 }
 
+// Leichte Farbnuance je Stammgruppe (Sonne/Wiese/Mond/keine) für die Chips.
+function groupChipClass(gruppe) {
+  return "chip-group-" + (gruppe || "none");
+}
+
 function isSelected(staffId, shiftKey, roomKey) {
   return !!selectedItem &&
     selectedItem.staffId === staffId &&
@@ -131,7 +136,7 @@ function renderRoomGrid(container, opts) {
 }
 
 function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, leavesAt, pickup) {
-  const classes = ["chip"];
+  const classes = ["chip", groupChipClass(staff.gruppe)];
   if (conflict) classes.push("chip-conflict");
   if (selected) classes.push("selected");
   const clickAttr = editable ? `onclick="chipClick(event, '${id}', '${shiftKey}', '${roomKey}')"` : "";
@@ -188,7 +193,7 @@ function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, week
     const frei = !isAvailable(id);
     const timeLabel = hours && !hours.frei ? `${hours.start}–${hours.end}` : "frei / nicht eingetragen";
     const selected = isSelected(id, "", "");
-    const classes = ["chip", "chip-source"];
+    const classes = ["chip", "chip-source", groupChipClass(s.gruppe)];
     if (frei) classes.push("chip-conflict");
     if (selected) classes.push("selected");
     classes.push(hasOpenCapacity(cells, hours, id) ? "chip-open" : "chip-placed");
