@@ -33,8 +33,9 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background: var(--color-bg);
+  background: linear-gradient(170deg, #f8f6f1 0%, #f5f3ec 45%, #f2ede0 100%) fixed;
   color: var(--color-text);
+  min-height: 100vh;
 }
 
 h1, h2, h3, .room-block-header, .tabs button, header.app-header nav a {
