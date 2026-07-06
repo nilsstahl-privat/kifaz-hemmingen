@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mittagsplaner – Wochenplanung</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>Kita Hemmingen – Offenes Mittagessen</h1>
+  <nav>
+    <a href="index.html">Tagesübersicht</a>
+    <a href="week.html" class="active">Wochenplanung</a>
+    <a href="staff.html">Personal &amp; Arbeitszeiten</a>
+  </nav>
+</header>
+<main>
+  <div id="fake-db-banner" class="fake-db-banner" style="display:none">
+    Firebase ist noch nicht eingerichtet – Änderungen werden nur lokal in diesem Browser gespeichert. Siehe README.md.
+  </div>
+
+  <div class="card">
+    <h2>Wochenübersicht &amp; Wochenplanung</h2>
+    <p class="muted">Dies ist der dauerhafte, wiederkehrende Plan. Personen per Drag &amp; Drop aus der rechten Liste in einen Raum/eine Schicht ziehen oder zwischen Zellen verschieben. Ziehen zurück in die Liste entfernt jemanden. Auch Personen, die laut Arbeitszeit an diesem Tag eigentlich nicht arbeiten, können eingeteilt werden (werden nur farblich markiert).</p>
+    <div id="tabs" class="tabs"></div>
+  </div>
+
+  <div class="card">
+    <div class="layout-with-sidebar">
+      <div id="room-grid"></div>
+      <div><div id="sidebar"></div></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/fake-db.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/seed-data.js"></script>
+<script src="js/week.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mittagsplaner – Tagesübersicht</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>Kita Hemmingen – Offenes Mittagessen</h1>
+  <nav>
+    <a href="index.html" class="active">Tagesübersicht</a>
+    <a href="week.html">Wochenplanung</a>
+    <a href="staff.html">Personal &amp; Arbeitszeiten</a>
+  </nav>
+</header>
+<main>
+  <div id="fake-db-banner" class="fake-db-banner" style="display:none">
+    Firebase ist noch nicht eingerichtet – Änderungen werden nur lokal in diesem Browser gespeichert. Siehe README.md.
+  </div>
+
+  <div class="card">
+    <h2 id="day-title">Tagesübersicht</h2>
+    <p class="muted">Zeigt die Raumeinteilung für heute (Wochenplan + eventuelle Tages-Ausnahmen). Im Bearbeiten-Modus kannst du per Drag &amp; Drop nur für heute umstellen, ohne den dauerhaften Wochenplan zu verändern.</p>
+    <button id="edit-toggle" class="btn secondary">Bearbeiten (heutige Ausnahme)</button>
+  </div>
+
+  <div id="day-content" class="card">
+    <div class="layout-with-sidebar">
+      <div id="room-grid"></div>
+      <div id="sidebar-wrap" style="display:none"><div id="sidebar"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Anwesenheit heute</h2>
+    <p class="muted">Person als krank oder verhindert melden – sie wird aus der Einteilung ausgeblendet, bleibt aber sichtbar (durchgestrichen).</p>
+    <div id="absence-panel"></div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/fake-db.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/seed-data.js"></script>
+<script src="js/index.js"></script>
+</body>
+</html>

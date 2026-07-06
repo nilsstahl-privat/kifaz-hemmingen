@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mittagsplaner – Personal &amp; Arbeitszeiten</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>Kita Hemmingen – Offenes Mittagessen</h1>
+  <nav>
+    <a href="index.html">Tagesübersicht</a>
+    <a href="week.html">Wochenplanung</a>
+    <a href="staff.html" class="active">Personal &amp; Arbeitszeiten</a>
+  </nav>
+</header>
+<main>
+  <div id="fake-db-banner" class="fake-db-banner" style="display:none">
+    Firebase ist noch nicht eingerichtet – Änderungen werden nur lokal in diesem Browser gespeichert. Siehe README.md.
+  </div>
+
+  <div class="card">
+    <h2>Neues Personal anlegen</h2>
+    <form id="add-staff-form">
+      <div class="form-row">
+        <label>Name <input type="text" id="new-name" required></label>
+        <label>Gruppe <select id="new-gruppe"></select></label>
+        <label>Notiz <input type="text" id="new-notiz" placeholder="optional"></label>
+        <label>Aktiv <input type="checkbox" id="new-aktiv" checked></label>
+        <button class="btn" type="submit">Anlegen</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Personal &amp; Arbeitszeiten</h2>
+    <p class="muted">Änderungen werden sofort gespeichert. "Aktiv" ausschalten blendet jemanden aus den Planungs-Seiten aus, ohne die Person zu löschen (z.B. bei längerer Abwesenheit). "Löschen" entfernt die Person endgültig, auch aus dem Wochenplan.</p>
+    <div id="staff-table-wrap" style="overflow-x:auto"></div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="js/config.js"></script>
+<script src="js/fake-db.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/data.js"></script>
+<script src="js/rooms.js"></script>
+<script src="js/seed-data.js"></script>
+<script src="js/staff.js"></script>
+</body>
+</html>
