@@ -57,9 +57,30 @@ function isPickupEligible(hours, roomCount) {
   return false;
 }
 
+// Garten-Modus (nur Tagesübersicht): fasst alle Nicht-Küche-Räume dieser Schicht
+// zu einer Liste zusammen. Jeder Eintrag merkt sich seinen tatsächlichen Raum
+// (actualRoom), damit Entfernen/Verschieben weiterhin die richtige Zelle trifft.
+function gartenEntriesFor(cells, shiftKey, roomKey) {
+  if (roomKey !== "garten") {
+    return ((cells[shiftKey] && cells[shiftKey][roomKey]) || []).map(id => ({ id, actualRoom: roomKey }));
+  }
+  const entries = [];
+  const seen = {};
+  ROOMS.forEach(r => {
+    if (r.key === "kueche") return;
+    ((cells[shiftKey] && cells[shiftKey][r.key]) || []).forEach(id => {
+      if (!seen[id]) { seen[id] = true; entries.push({ id, actualRoom: r.key }); }
+    });
+  });
+  ((cells[shiftKey] && cells[shiftKey].garten) || []).forEach(id => {
+    if (!seen[id]) { seen[id] = true; entries.push({ id, actualRoom: "garten" }); }
+  });
+  return entries;
+}
+
 // opts = {
 //   weekdayKey, cells: {shiftKey: {roomKey: [staffId,...]}}, staffMap,
-//   workingHoursMap, editable,
+//   workingHoursMap, editable, gartenModus (nur Tagesübersicht),
 //   onDrop(shiftKey, roomKey, staffId), onRemove(shiftKey, roomKey, staffId)
 // }
 function renderRoomGrid(container, opts) {
@@ -70,6 +91,7 @@ function renderRoomGrid(container, opts) {
   const workingHoursMap = opts.workingHoursMap || {};
   const weekdayKey = opts.weekdayKey;
   const editable = opts.editable !== false;
+  const gartenModus = !!opts.gartenModus;
 
   let html = "";
   if (editable && selectedItem) {
@@ -78,12 +100,18 @@ function renderRoomGrid(container, opts) {
       <button type="button" class="btn small secondary" onclick="cancelSelection()">Abbrechen</button></div>`;
   }
 
+  const roomList = gartenModus
+    ? [ROOMS.find(r => r.key === "kueche"), { key: "garten", label: "Garten", checkMin: false }]
+    : ROOMS;
+
   html += '<div class="room-grid">';
-  ROOMS.forEach(room => {
+  roomList.forEach(room => {
     html += `<div class="room-block"><div class="room-block-header">${room.label}</div><div class="room-block-shifts">`;
     SHIFTS.forEach(shift => {
-      const ids = (cells[shift.key] && cells[shift.key][room.key]) || [];
-      const understaffed = room.checkMin && ids.length > 0 && ids.length < MIN_PER_ROOM;
+      const entries = gartenModus
+        ? gartenEntriesFor(cells, shift.key, room.key)
+        : (((cells[shift.key] && cells[shift.key][room.key]) || []).map(id => ({ id, actualRoom: room.key })));
+      const understaffed = room.checkMin && entries.length > 0 && entries.length < MIN_PER_ROOM;
       const canDrop = editable && !!selectedItem;
       html += `<div class="shift-col ${understaffed ? "understaffed" : ""} ${canDrop ? "can-drop" : ""}"
                     onclick="roomRowClick('${shift.key}', '${room.key}')"
@@ -93,20 +121,20 @@ function renderRoomGrid(container, opts) {
                    understaffed ? ' <span class="warn">⚠ unterbesetzt</span>' : ""
                  }</div>
                  <div class="shift-col-chips">`;
-      ids.forEach(id => {
+      entries.forEach(({ id, actualRoom }) => {
         const s = staffMap[id];
         if (!s) return;
         const hours = (workingHoursMap[id] || {})[weekdayKey];
         const conflict = !!weekdayKey && !isWorkingDuringShift(hours, shift.key);
         const leavesAt = weekdayKey ? earlyLeaveTime(hours, shift.key) : null;
-        const selected = isSelected(id, shift.key, room.key);
+        const selected = isSelected(id, shift.key, actualRoom);
         let pickup = null;
         if (opts.pickup && shift.key === "a") {
           const isPickupPerson = opts.pickup.personId === id;
-          const eligible = isPickupEligible(hours, ids.length);
+          const eligible = isPickupEligible(hours, entries.length);
           if (isPickupPerson || eligible) pickup = { active: isPickupPerson };
         }
-        html += renderChip(id, s, shift.key, room.key, conflict, editable, selected, leavesAt, pickup);
+        html += renderChip(id, s, shift.key, actualRoom, conflict, editable, selected, leavesAt, pickup);
       });
       html += "</div></div>";
     });

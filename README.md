@@ -77,12 +77,21 @@ nur, wenn die Datenbank noch komplett leer ist – bestehende Änderungen werden
 /staff/{staffId}                     name, gruppe, notiz, aktiv
 /workingHours/{staffId}/{mo..fr}      start, end, frei
 /weeklyTemplate/{mo..fr}/{a|b}/{raum} [staffId, ...]   – a = 11:45–13:00, b = ab 13:00
+                                                          ("garten" ist ein reiner
+                                                          Tages-Pseudo-Raum, kommt hier nie vor)
+/weeklyTemplate/{mo..fr}/pickup        staffId – wiederkehrender Standard: wer holt an
+                                                   diesem Wochentag die Heimgehkinder ab
 /dailyOverrides/{datumISO}/removed/{a|b}/{raum}  [staffId, ...] – für heute aus dieser
                                                    Wochenplan-Zelle entfernt (z.B. krank)
 /dailyOverrides/{datumISO}/added/{a|b}/{raum}    [staffId, ...] – für heute zusätzlich in
-                                                   diese Zelle (nicht im Wochenplan)
-/dailyOverrides/{datumISO}/pickup                staffId – holt heute um 12:20 die
-                                                   Heimgehkinder ab
+                                                   diese Zelle (nicht im Wochenplan), inkl.
+                                                   Zuordnungen zum Pseudo-Raum "garten"
+/dailyOverrides/{datumISO}/pickup     staffId | "" | (fehlt) – Tages-Sonderregel für die
+                                        Abholung; "" = explizit niemand heute, fehlt =
+                                        wiederkehrender Standard aus dem Wochenplan gilt
+/dailyOverrides/{datumISO}/gartenModus  true | (fehlt) – Garten-Modus für diesen einen Tag
+                                        (nur Tagesübersicht): fasst alle Nicht-Küche-Räume
+                                        zu einer "Garten"-Gruppe zusammen
 ```
 
 Die Tagesübersicht speichert also nie eine Kopie des Wochenplans, sondern nur die Differenz

@@ -3,6 +3,10 @@
 // (removed/added) – Änderungen am Wochenplan zeigen sich also sofort auch heute,
 // außer für Personen, die für heute ausdrücklich entfernt oder zusätzlich
 // eingeteilt wurden (× am Chip = "krank/verhindert für heute raus").
+//
+// Garten-Modus: nur hier (nicht in der Wochenplanung) verfügbarer Umschalter,
+// der alle Nicht-Küche-Räume für diesen Tag zu einer einzigen "Garten"-Gruppe
+// zusammenfasst.
 
 let staffMap = {};
 let workingHoursMap = {};
@@ -46,14 +50,29 @@ function mergedCells() {
     ROOMS.forEach(room => {
       result[shift.key][room.key] = dailyMergedShiftRoom(templateShift, removedShift, addedShift, room.key);
     });
+    // "garten" ist ein reiner Tages-Pseudo-Raum für den Garten-Modus, kommt nie
+    // im Wochenplan vor – hier landen nur Personen, die heute explizit rein gezogen wurden.
+    result[shift.key].garten = dailyMergedShiftRoom(templateShift, removedShift, addedShift, "garten");
   });
   return result;
+}
+
+// Wer holt heute die Heimgehkinder ab? Eine Tages-Sonderregel (auch "explizit
+// niemand" über "") geht vor dem wiederkehrenden Wochenplan-Standard.
+function effectivePickup() {
+  const dailyVal = dailyOverride.pickup;
+  if (dailyVal !== undefined && dailyVal !== null) return dailyVal || null;
+  const weeklyVal = weeklyTemplate[weekdayKey] && weeklyTemplate[weekdayKey].pickup;
+  return weeklyVal || null;
 }
 
 function renderAll() {
   if (!weekdayKey) return;
 
   const cells = mergedCells();
+  const gartenModus = !!dailyOverride.gartenModus;
+
+  renderModeToggle(gartenModus);
 
   renderRoomGrid(document.getElementById("room-grid"), {
     weekdayKey,
@@ -61,12 +80,29 @@ function renderAll() {
     staffMap,
     workingHoursMap,
     editable: true,
-    pickup: { personId: dailyOverride.pickup || null },
+    gartenModus,
+    pickup: { personId: effectivePickup() },
     onDrop: (shift, room, staffId) => addStaffToDailyCell(dateISO, weekdayKey, shift, room, staffId),
     onRemove: (shift, room, staffId) => removeStaffFromDailyCell(dateISO, weekdayKey, shift, room, staffId),
-    onTogglePickup: staffId => setPickupPerson(dateISO, staffId)
+    onTogglePickup: staffId => {
+      const current = effectivePickup();
+      setDailyPickup(dateISO, current === staffId ? "" : staffId);
+    }
   });
 
   const activeIds = Object.keys(staffMap).filter(id => staffMap[id].aktiv !== false);
   renderStaffSidebar(document.getElementById("sidebar"), activeIds, staffMap, workingHoursMap, weekdayKey, cells);
+}
+
+function renderModeToggle(gartenModus) {
+  const el = document.getElementById("mode-toggle");
+  if (!el) return;
+  el.innerHTML = `
+    <button type="button" class="${!gartenModus ? "active" : ""}" onclick="setMode(false)">Räume</button>
+    <button type="button" class="${gartenModus ? "active" : ""}" onclick="setMode(true)">Garten</button>
+  `;
+}
+
+function setMode(enabled) {
+  setGartenModus(dateISO, enabled);
 }

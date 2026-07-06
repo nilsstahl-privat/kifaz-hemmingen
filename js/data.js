@@ -42,7 +42,12 @@ function deleteStaffEverywhere(staffId) {
     const tmpl = snap.val() || {};
     let changed = false;
     for (const day of Object.keys(tmpl)) {
+      if (tmpl[day].pickup === staffId) {
+        tmpl[day].pickup = null;
+        changed = true;
+      }
       for (const shift of Object.keys(tmpl[day] || {})) {
+        if (shift === "pickup") continue;
         for (const room of Object.keys(tmpl[day][shift] || {})) {
           const arr = tmpl[day][shift][room] || [];
           if (arr.includes(staffId)) {
@@ -134,6 +139,11 @@ function dailyMergedShiftRoom(templateShift, removedShift, addedShift, roomKey) 
   return base.concat(extra);
 }
 
+// Zusätzlich zu den 6 festen Räumen gibt es "garten" als reinen Tages-Pseudo-Raum
+// für den Garten-Modus (siehe rooms.js) – kommt nie im Wochenplan vor, muss aber
+// bei der Dopplungs-Prüfung mit berücksichtigt werden.
+const DAILY_DEDUP_ROOM_KEYS = ROOMS.map(r => r.key).concat(["garten"]);
+
 // Wie addStaffToCell, aber für die Tages-Ausnahme: schreibt nie in den
 // Wochenplan selbst, sondern nur in removed/added für dieses eine Datum.
 // Dieselbe Sicherheitsregel gilt: nie zwei Räume gleichzeitig in derselben Schicht.
@@ -147,17 +157,17 @@ function addStaffToDailyCell(dateISO, weekdayKey, toShift, toRoom, staffId) {
     db.ref(removedPath).once("value").then(s => s.val() || {}),
     db.ref(addedPath).once("value").then(s => s.val() || {})
   ]).then(([templateShift, removedShift, addedShift]) => {
-    ROOMS.forEach(room => {
-      if (room.key === toRoom) return;
-      const inThisRoom = dailyMergedShiftRoom(templateShift, removedShift, addedShift, room.key).includes(staffId);
+    DAILY_DEDUP_ROOM_KEYS.forEach(roomKey => {
+      if (roomKey === toRoom) return;
+      const inThisRoom = dailyMergedShiftRoom(templateShift, removedShift, addedShift, roomKey).includes(staffId);
       if (!inThisRoom) return;
-      if ((templateShift[room.key] || []).includes(staffId)) {
-        const removedArr = removedShift[room.key] || [];
-        if (!removedArr.includes(staffId)) removedShift[room.key] = removedArr.concat(staffId);
+      if ((templateShift[roomKey] || []).includes(staffId)) {
+        const removedArr = removedShift[roomKey] || [];
+        if (!removedArr.includes(staffId)) removedShift[roomKey] = removedArr.concat(staffId);
       } else {
-        const addedArr = (addedShift[room.key] || []).filter(id => id !== staffId);
-        if (addedArr.length) addedShift[room.key] = addedArr;
-        else delete addedShift[room.key];
+        const addedArr = (addedShift[roomKey] || []).filter(id => id !== staffId);
+        if (addedArr.length) addedShift[roomKey] = addedArr;
+        else delete addedShift[roomKey];
       }
     });
 
@@ -196,10 +206,24 @@ function removeStaffFromDailyCell(dateISO, weekdayKey, shiftKey, roomKey, staffI
   });
 }
 
-// Wer holt heute um 12:20 die Heimgehkinder ab? Nur eine Person pro Tag;
-// nochmaliges Antippen derselben Person hebt die Zuteilung wieder auf.
-function setPickupPerson(dateISO, staffId) {
-  db.ref("dailyOverrides/" + dateISO + "/pickup").once("value").then(snap => {
-    db.ref("dailyOverrides/" + dateISO + "/pickup").set(snap.val() === staffId ? null : staffId);
+// Wer holt heute um 12:20 die Heimgehkinder ab? Wenn für heute nichts explizit
+// gesetzt ist, gilt der wiederkehrende Standard aus dem Wochenplan (setWeeklyPickup).
+// value: staffId (heutige Sonderregel), "" (explizit niemand heute, überschreibt
+// den Wochenplan-Standard) oder null (Sonderregel für heute aufheben).
+function setDailyPickup(dateISO, value) {
+  db.ref("dailyOverrides/" + dateISO + "/pickup").set(value === null ? null : value);
+}
+
+// Wiederkehrender Standard für einen Wochentag (Wochenplanung). Nochmaliges
+// Antippen derselben Person hebt die Zuteilung wieder auf.
+function setWeeklyPickup(weekdayKey, staffId) {
+  db.ref("weeklyTemplate/" + weekdayKey + "/pickup").once("value").then(snap => {
+    db.ref("weeklyTemplate/" + weekdayKey + "/pickup").set(snap.val() === staffId ? null : staffId);
   });
+}
+
+// Garten-Modus (nur Tagesübersicht): fasst alle Nicht-Küche-Räume für diesen
+// einen Tag zu einer einzigen "Garten"-Gruppe zusammen.
+function setGartenModus(dateISO, enabled) {
+  db.ref("dailyOverrides/" + dateISO + "/gartenModus").set(enabled ? true : null);
 }

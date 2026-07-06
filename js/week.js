@@ -41,8 +41,10 @@ function renderAll() {
     staffMap,
     workingHoursMap,
     editable: true,
+    pickup: { personId: cells.pickup || null },
     onDrop: (shift, room, staffId) => addStaffToCell("weeklyTemplate/" + selectedDay, shift, room, staffId),
-    onRemove: (shift, room, staffId) => removeStaffFromCell("weeklyTemplate/" + selectedDay, shift, room, staffId)
+    onRemove: (shift, room, staffId) => removeStaffFromCell("weeklyTemplate/" + selectedDay, shift, room, staffId),
+    onTogglePickup: staffId => setWeeklyPickup(selectedDay, staffId)
   });
 
   const activeIds = Object.keys(staffMap).filter(id => staffMap[id].aktiv !== false);
