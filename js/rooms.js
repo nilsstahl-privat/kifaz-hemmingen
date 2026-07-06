@@ -30,6 +30,17 @@ function isWorkingDuringShift(hours, shiftKey) {
   return hhmmToMin(hours.start) < winEnd && hhmmToMin(hours.end) > winStart;
 }
 
+// Ist die Person während dieser Schicht da, geht aber vor Schichtende? Dann
+// zeigen wir "bis HH:MM" am Namen an, statt sie nur pauschal als Konflikt zu markieren.
+function earlyLeaveTime(hours, shiftKey) {
+  if (!hours || hours.frei || !hours.start || !hours.end) return null;
+  const [winStart, winEnd] = SHIFT_WINDOWS[shiftKey];
+  const start = hhmmToMin(hours.start);
+  const end = hhmmToMin(hours.end);
+  if (start < winEnd && end > winStart && end < winEnd) return hours.end;
+  return null;
+}
+
 function isSelected(staffId, shiftKey, roomKey) {
   return !!selectedItem &&
     selectedItem.staffId === staffId &&
@@ -59,27 +70,28 @@ function renderRoomGrid(container, opts) {
   }
 
   html += '<div class="room-grid">';
-  SHIFTS.forEach(shift => {
-    html += `<div class="shift-block"><h3>${shift.label}</h3><div class="room-rows">`;
-    ROOMS.forEach(room => {
+  ROOMS.forEach(room => {
+    html += `<div class="room-block"><div class="room-block-header">${room.label}</div><div class="room-block-shifts">`;
+    SHIFTS.forEach(shift => {
       const ids = (cells[shift.key] && cells[shift.key][room.key]) || [];
       const understaffed = room.checkMin && ids.length > 0 && ids.length < MIN_PER_ROOM;
       const canDrop = editable && !!selectedItem;
-      html += `<div class="room-row ${understaffed ? "understaffed" : ""} ${canDrop ? "can-drop" : ""}"
+      html += `<div class="shift-col ${understaffed ? "understaffed" : ""} ${canDrop ? "can-drop" : ""}"
                     onclick="roomRowClick('${shift.key}', '${room.key}')"
                     ondragover="roomGridAllowDrop(event)"
                     ondrop="roomGridDrop(event, '${shift.key}', '${room.key}')">
-                 <div class="room-row-label">${room.label}${
+                 <div class="shift-col-label">${shift.label}${
                    understaffed ? ' <span class="warn">⚠ unterbesetzt</span>' : ""
                  }</div>
-                 <div class="room-row-chips">`;
+                 <div class="shift-col-chips">`;
       ids.forEach(id => {
         const s = staffMap[id];
         if (!s) return;
         const hours = (workingHoursMap[id] || {})[weekdayKey];
         const conflict = !!weekdayKey && !isWorkingDuringShift(hours, shift.key);
+        const leavesAt = weekdayKey ? earlyLeaveTime(hours, shift.key) : null;
         const selected = isSelected(id, shift.key, room.key);
-        html += renderChip(id, s, shift.key, room.key, conflict, editable, selected);
+        html += renderChip(id, s, shift.key, room.key, conflict, editable, selected, leavesAt);
       });
       html += "</div></div>";
     });
@@ -89,7 +101,7 @@ function renderRoomGrid(container, opts) {
   container.innerHTML = html;
 }
 
-function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected) {
+function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, leavesAt) {
   const classes = ["chip"];
   if (conflict) classes.push("chip-conflict");
   if (selected) classes.push("selected");
@@ -103,7 +115,8 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected) 
   const title = conflict
     ? ` title="${escAttr("Laut Arbeitszeit an diesem Tag/in dieser Schicht eigentlich nicht da")}"`
     : "";
-  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${removeBtn}</span>`;
+  const leaveLabel = leavesAt ? `<span class="chip-leaves">bis ${escapeHtml(leavesAt)}</span>` : "";
+  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${removeBtn}</span>`;
 }
 
 // Seitenleiste mit allen verfügbaren Personen zum Reinziehen/Antippen. Personen, die laut

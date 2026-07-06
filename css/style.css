@@ -31,7 +31,7 @@ body {
   color: var(--color-text);
 }
 
-h1, h2, h3, .room-row-label, .tabs button, header.app-header nav a {
+h1, h2, h3, .room-block-header, .tabs button, header.app-header nav a {
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -163,62 +163,71 @@ main {
 .room-grid {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-.shift-block h3 {
-  margin: 0 0 8px;
-  font-size: 17px;
-  color: var(--color-muted);
-}
-
-.room-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.room-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px dashed var(--color-border);
+.room-block {
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 10px 12px;
-  min-height: 48px;
+  padding: 12px;
   background: #fafbf9;
 }
 
-.room-row.understaffed {
+.room-block-header {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.room-block-shifts {
+  display: flex;
+  gap: 12px;
+}
+
+/* Auf schmalen Tablets (Hochformat) die beiden Schichten pro Raum
+   untereinander statt nebeneinander anzeigen. */
+@media (max-width: 640px) {
+  .room-block-shifts {
+    flex-direction: column;
+  }
+}
+
+.shift-col {
+  flex: 1;
+  min-width: 0;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  min-height: 48px;
+  background: white;
+}
+
+.shift-col.understaffed {
   border-color: var(--color-warn);
   background: var(--color-warn-bg);
 }
 
-.room-row.can-drop {
+.shift-col.can-drop {
   border-style: solid;
   border-color: var(--color-primary);
   background: #fff8ef;
   cursor: pointer;
 }
 
-.room-row-label {
-  min-width: 96px;
-  font-weight: 400;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.room-row-label .warn {
-  color: var(--color-warn);
-  font-weight: 500;
+.shift-col-label {
   font-size: 12px;
+  color: var(--color-muted);
+  margin-bottom: 6px;
 }
 
-.room-row-chips {
+.shift-col-label .warn {
+  color: var(--color-warn);
+  font-weight: 600;
+}
+
+.shift-col-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  flex: 1;
 }
 
 .chip {
@@ -253,6 +262,12 @@ main {
   border-color: var(--color-primary-dark);
   color: white;
   box-shadow: 0 0 0 2px rgba(221, 122, 31, 0.35);
+}
+
+.chip-leaves {
+  font-size: 11px;
+  opacity: 0.75;
+  white-space: nowrap;
 }
 
 .chip-remove {
