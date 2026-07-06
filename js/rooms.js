@@ -139,24 +139,27 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, 
   return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${pickupBtn}${removeBtn}</span>`;
 }
 
-// In wie vielen der beiden Schichten (a/b) steckt diese Person aktuell in
-// irgendeinem Raum? 0/1 = hat noch Kapazität frei, 2 = schon voll eingeteilt.
-function assignedShiftCount(cells, staffId) {
-  if (!cells) return 0;
-  let count = 0;
-  SHIFTS.forEach(shift => {
+// Gibt es noch eine Schicht, in der diese Person laut Arbeitszeiten überhaupt
+// arbeiten könnte UND noch nicht eingeteilt ist? Nur dann gilt sie als "noch
+// offen". Jemand, der z.B. nur bis 13:00 arbeitet, kann nie in Schicht b landen
+// und gilt direkt nach der Zuteilung in Schicht a als fertig eingeteilt – auch
+// wenn er "erst" in einer von zwei Schichten steht.
+function hasOpenCapacity(cells, hours, staffId) {
+  if (!cells) return true;
+  return SHIFTS.some(shift => {
     const shiftCells = cells[shift.key] || {};
-    const present = Object.keys(shiftCells).some(roomKey => (shiftCells[roomKey] || []).includes(staffId));
-    if (present) count++;
+    const alreadyIn = Object.keys(shiftCells).some(roomKey => (shiftCells[roomKey] || []).includes(staffId));
+    if (alreadyIn) return false;
+    return isWorkingDuringShift(hours, shift.key);
   });
-  return count;
 }
 
 // Seitenleiste mit allen Personen zum Reinziehen/Antippen, aufgeteilt danach, ob sie laut
 // Arbeitszeitplan an diesem Tag überhaupt verfügbar sind. "Nicht da" sperrt das Zuordnen
 // nicht (z.B. spontane Vertretung), macht aber sichtbar, wer eigentlich frei hat. Zusätzlich:
-// wer schon in beiden Schichten irgendwo eingeteilt ist, wird ausgegraut (nichts mehr zu tun),
-// wer noch mindestens eine Schicht frei hat, wird farblich hervorgehoben.
+// wer laut Arbeitszeit keine weitere Schicht mehr arbeiten könnte (z.B. schon eingeteilt,
+// oder geht vor Schichtbeginn/-ende) wird ausgegraut, wer noch eine mögliche freie
+// Schicht hat, wird farblich hervorgehoben.
 function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, weekdayKey, cells) {
   _sidebarArgs = { container, staffIds, staffMap, workingHoursMap, weekdayKey, cells };
 
@@ -171,11 +174,10 @@ function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, week
     const frei = !isAvailable(id);
     const timeLabel = hours && !hours.frei ? `${hours.start}–${hours.end}` : "frei / nicht eingetragen";
     const selected = isSelected(id, "", "");
-    const assignedCount = assignedShiftCount(cells, id);
     const classes = ["chip", "chip-source"];
     if (frei) classes.push("chip-conflict");
     if (selected) classes.push("selected");
-    classes.push(assignedCount >= 2 ? "chip-placed" : "chip-open");
+    classes.push(hasOpenCapacity(cells, hours, id) ? "chip-open" : "chip-placed");
     return `<span class="${classes.join(" ")}" draggable="true"
                 onclick="chipClick(event, '${id}', '', '')"
                 ondragstart="roomGridDragStart(event, '${id}', '', '')"
@@ -183,7 +185,7 @@ function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, week
   }
 
   let html = '<div class="staff-sidebar" onclick="sidebarAreaClick()" ondragover="roomGridAllowDrop(event)" ondrop="roomGridDropToSidebar(event)">';
-  html += '<h4>Verfügbares Personal</h4><p class="hint">Antippen zum Auswählen, dann Zielbereich antippen. Auf freie Stelle hier tippen entfernt jemanden aus der Einteilung. Ausgegraut = schon in beiden Schichten eingeteilt.</p>';
+  html += '<h4>Verfügbares Personal</h4><p class="hint">Antippen zum Auswählen, dann Zielbereich antippen. Auf freie Stelle hier tippen entfernt jemanden aus der Einteilung. Ausgegraut = laut Arbeitszeit keine weitere Schicht mehr möglich.</p>';
 
   if (weekdayKey) {
     const ids = staffIds.filter(id => staffMap[id]);
