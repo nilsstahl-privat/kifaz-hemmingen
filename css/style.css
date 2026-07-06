@@ -1,9 +1,9 @@
 :root {
-  /* Farben aus dem KIFAZ-Logo (Orange / Magenta / Gelb / Oliv + dunkles Anthrazit-Grün) */
-  --color-orange: #dd7a1f;
-  --color-magenta: #c41c7f;
-  --color-yellow: #f2c94c;
-  --color-olive: #b3ac74;
+  /* Offizielle KiFaZ-Markenfarben */
+  --color-orange: #E55C00;
+  --color-magenta: #CC00FF;
+  --color-yellow: #F2D930;
+  --color-olive: #A5B84E;
   --color-dark: #24332b;
 
   --color-bg: #f6f5f0;
@@ -13,9 +13,11 @@
   --color-muted: #726f60;
   --color-primary: var(--color-orange);
   --color-primary-dark: var(--color-dark);
-  --color-warn: var(--color-magenta);
-  --color-warn-bg: #fbe9f2;
-  --color-conflict: #8a6d16;
+  /* Aus der Markenfarbe Magenta abgeleitet, aber gedämpft (die reine Markenfarbe
+     wäre als Rahmen/Hintergrund zu grell). */
+  --color-warn: #a916c4;
+  --color-warn-bg: #f8e6fb;
+  --color-conflict: #9c4a28;
   --radius: 14px;
   --radius-sm: 9px;
 
@@ -43,7 +45,7 @@ h1, h2, h3, .room-block-header, .tabs button, header.app-header nav a {
 }
 
 header.app-header {
-  background: var(--color-primary-dark);
+  background: linear-gradient(135deg, #1b2620 0%, #24332b 45%, #46311a 100%);
   color: white;
   padding: 16px 24px;
   display: flex;
@@ -254,9 +256,9 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #eeecd9;
-  border: 1px solid #d8d3ab;
-  color: #55522e;
+  background: var(--chip-bg, #eeecd9);
+  border: 1px solid var(--chip-border, #d8d3ab);
+  color: var(--chip-color, #55522e);
   border-radius: 999px;
   padding: 7px 8px 7px 12px;
   font-size: 14px;
@@ -273,37 +275,26 @@ main {
   box-shadow: var(--shadow-md);
 }
 
-/* Leichte Farbnuancen je Stammgruppe, damit auf einen Blick erkennbar ist,
-   woher jemand eigentlich kommt (Sonne/Wiese/Mond), auch wenn alle im
-   offenen Mittagessen gemischt sind. */
-.chip-group-sonne {
-  background: #fff2d6;
-  border-color: #f2dda0;
-  color: #7a5710;
-}
+/* Die eigentliche Farbe je Person kommt jetzt als Inline-Style (--chip-bg/
+   --chip-border/--chip-color) aus rooms.js: Farbton nach Stammgruppe
+   (Sonne/Wiese/Mond/keine), Helligkeit individuell pro Person leicht
+   abgestuft, damit auch innerhalb einer Gruppe jede Person unterscheidbar
+   bleibt. Siehe personChipStyle() in js/rooms.js. */
 
-.chip-group-wiese {
-  background: #e3f2e0;
-  border-color: #bde2b8;
-  color: #2f6b2a;
-}
-
-.chip-group-mond {
-  background: #e8ebfa;
-  border-color: #c6cff2;
-  color: #3a437d;
-}
-
-.chip-group-none {
-  background: #eeecd9;
-  border-color: #d8d3ab;
-  color: #55522e;
-}
-
+/* Arbeitszeit-Konflikt (Person laut Plan in dieser Schicht eigentlich nicht
+   da) – bewusst warnend und klar von allen Gruppenfarben unterscheidbar. */
 .chip-conflict {
-  background: #fdecc2;
-  border-color: #f0d488;
+  background: #fbe0d6;
+  border-color: #eeb69f;
   color: var(--color-conflict);
+}
+
+/* Sidebar: Person ist laut Arbeitszeit heute gar nicht eingeplant. Neutral/
+   grau statt Gruppenfarbe, damit es sich klar von "verfügbar heute" abhebt. */
+.chip-unavailable {
+  background: #ebe9e3;
+  border-color: #d6d2c4;
+  color: #726f60;
 }
 
 /* Pool-Chips: noch mind. eine Schicht offen -> hervorgehoben. */

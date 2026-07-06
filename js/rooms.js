@@ -41,9 +41,26 @@ function earlyLeaveTime(hours, shiftKey) {
   return null;
 }
 
-// Leichte Farbnuance je Stammgruppe (Sonne/Wiese/Mond/keine) für die Chips.
-function groupChipClass(gruppe) {
-  return "chip-group-" + (gruppe || "none");
+// Farbton je Stammgruppe (Sonne/Wiese/Mond/keine) plus pro Person fein
+// abgestufte Helligkeit/Sättigung (viele mögliche Kombinationen, damit auch
+// innerhalb einer Gruppe jede Person unterscheidbar bleibt).
+const GROUP_HUES = { sonne: 45, wiese: 102, mond: 233, none: 73 };
+
+function hashString(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function personChipStyle(staffId, gruppe) {
+  const hue = GROUP_HUES[gruppe || "none"];
+  const hash = hashString(staffId);
+  const lightness = 83 + (hash % 15); // 83–97%
+  const saturation = 50 + ((hash >>> 9) % 33); // 50–82%
+  const bg = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  const border = `hsl(${hue}, ${saturation}%, ${lightness - 16}%)`;
+  const color = `hsl(${hue}, 45%, 24%)`;
+  return `--chip-bg:${bg};--chip-border:${border};--chip-color:${color};`;
 }
 
 function isSelected(staffId, shiftKey, roomKey) {
@@ -136,9 +153,10 @@ function renderRoomGrid(container, opts) {
 }
 
 function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, leavesAt, pickup) {
-  const classes = ["chip", groupChipClass(staff.gruppe)];
+  const classes = ["chip"];
   if (conflict) classes.push("chip-conflict");
   if (selected) classes.push("selected");
+  const styleAttr = ` style="${escAttr(personChipStyle(id, staff.gruppe))}"`;
   const clickAttr = editable ? `onclick="chipClick(event, '${id}', '${shiftKey}', '${roomKey}')"` : "";
   const dragAttrs = editable
     ? `draggable="true" ondragstart="roomGridDragStart(event, '${id}', '${shiftKey}', '${roomKey}')"`
@@ -155,7 +173,7 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, 
     ? ` title="${escAttr("Laut Arbeitszeit an diesem Tag/in dieser Schicht eigentlich nicht da")}"`
     : "";
   const leaveLabel = leavesAt ? `<span class="chip-leaves">bis ${escapeHtml(leavesAt)}</span>` : "";
-  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${pickupBadge}${removeBtn}</span>`;
+  return `<span class="${classes.join(" ")}"${styleAttr} ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${pickupBadge}${removeBtn}</span>`;
 }
 
 // Gibt es noch eine Schicht, in der diese Person laut Arbeitszeiten überhaupt
@@ -193,11 +211,11 @@ function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, week
     const frei = !isAvailable(id);
     const timeLabel = hours && !hours.frei ? `${hours.start}–${hours.end}` : "frei / nicht eingetragen";
     const selected = isSelected(id, "", "");
-    const classes = ["chip", "chip-source", groupChipClass(s.gruppe)];
-    if (frei) classes.push("chip-conflict");
+    const classes = ["chip", "chip-source"];
+    if (frei) classes.push("chip-unavailable");
     if (selected) classes.push("selected");
     classes.push(hasOpenCapacity(cells, hours, id) ? "chip-open" : "chip-placed");
-    return `<span class="${classes.join(" ")}" draggable="true"
+    return `<span class="${classes.join(" ")}" style="${escAttr(personChipStyle(id, s.gruppe))}" draggable="true"
                 onclick="chipClick(event, '${id}', '', '')"
                 ondragstart="roomGridDragStart(event, '${id}', '', '')"
                 title="${escAttr(timeLabel)}">${escapeHtml(s.name)}</span>`;
