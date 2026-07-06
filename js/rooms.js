@@ -48,6 +48,15 @@ function isSelected(staffId, shiftKey, roomKey) {
     selectedItem.fromRoom === roomKey;
 }
 
+// Wer kommt für die Regelkinder-Abholung um 12:20 infrage? Nur Personen, die
+// entweder bis spätestens 12:30 gehen oder in einem Raum mit schon 3+ Leuten
+// stehen (dort fällt das kurze Fehlen nicht unter die Mindestbesetzung).
+function isPickupEligible(hours, roomCount) {
+  if (roomCount >= 3) return true;
+  if (hours && !hours.frei && hours.end && hhmmToMin(hours.end) <= hhmmToMin("12:30")) return true;
+  return false;
+}
+
 // opts = {
 //   weekdayKey, cells: {shiftKey: {roomKey: [staffId,...]}}, staffMap,
 //   workingHoursMap, editable,
@@ -91,7 +100,13 @@ function renderRoomGrid(container, opts) {
         const conflict = !!weekdayKey && !isWorkingDuringShift(hours, shift.key);
         const leavesAt = weekdayKey ? earlyLeaveTime(hours, shift.key) : null;
         const selected = isSelected(id, shift.key, room.key);
-        html += renderChip(id, s, shift.key, room.key, conflict, editable, selected, leavesAt);
+        let pickup = null;
+        if (opts.pickup && shift.key === "a") {
+          const isPickupPerson = opts.pickup.personId === id;
+          const eligible = isPickupEligible(hours, ids.length);
+          if (isPickupPerson || eligible) pickup = { active: isPickupPerson };
+        }
+        html += renderChip(id, s, shift.key, room.key, conflict, editable, selected, leavesAt, pickup);
       });
       html += "</div></div>";
     });
@@ -101,7 +116,7 @@ function renderRoomGrid(container, opts) {
   container.innerHTML = html;
 }
 
-function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, leavesAt) {
+function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, leavesAt, pickup) {
   const classes = ["chip"];
   if (conflict) classes.push("chip-conflict");
   if (selected) classes.push("selected");
@@ -112,18 +127,38 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, 
   const removeBtn = editable
     ? `<button type="button" class="chip-remove" title="Entfernen" onclick="event.stopPropagation(); roomGridRemoveClick('${shiftKey}','${roomKey}','${id}')"><i class="fa-solid fa-xmark"></i></button>`
     : "";
+  const pickupBtn = pickup
+    ? `<button type="button" class="chip-pickup ${pickup.active ? "active" : ""}" title="${escAttr(
+        "Holt um 12:20 die Heimgehkinder ab (ab ca. 12:35 wieder einsetzbar)"
+      )}" onclick="event.stopPropagation(); roomGridTogglePickup('${id}')"><i class="fa-solid fa-house"></i></button>`
+    : "";
   const title = conflict
     ? ` title="${escAttr("Laut Arbeitszeit an diesem Tag/in dieser Schicht eigentlich nicht da")}"`
     : "";
   const leaveLabel = leavesAt ? `<span class="chip-leaves">bis ${escapeHtml(leavesAt)}</span>` : "";
-  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${removeBtn}</span>`;
+  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${pickupBtn}${removeBtn}</span>`;
+}
+
+// In wie vielen der beiden Schichten (a/b) steckt diese Person aktuell in
+// irgendeinem Raum? 0/1 = hat noch Kapazität frei, 2 = schon voll eingeteilt.
+function assignedShiftCount(cells, staffId) {
+  if (!cells) return 0;
+  let count = 0;
+  SHIFTS.forEach(shift => {
+    const shiftCells = cells[shift.key] || {};
+    const present = Object.keys(shiftCells).some(roomKey => (shiftCells[roomKey] || []).includes(staffId));
+    if (present) count++;
+  });
+  return count;
 }
 
 // Seitenleiste mit allen Personen zum Reinziehen/Antippen, aufgeteilt danach, ob sie laut
 // Arbeitszeitplan an diesem Tag überhaupt verfügbar sind. "Nicht da" sperrt das Zuordnen
-// nicht (z.B. spontane Vertretung), macht aber sichtbar, wer eigentlich frei hat.
-function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, weekdayKey) {
-  _sidebarArgs = { container, staffIds, staffMap, workingHoursMap, weekdayKey };
+// nicht (z.B. spontane Vertretung), macht aber sichtbar, wer eigentlich frei hat. Zusätzlich:
+// wer schon in beiden Schichten irgendwo eingeteilt ist, wird ausgegraut (nichts mehr zu tun),
+// wer noch mindestens eine Schicht frei hat, wird farblich hervorgehoben.
+function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, weekdayKey, cells) {
+  _sidebarArgs = { container, staffIds, staffMap, workingHoursMap, weekdayKey, cells };
 
   function isAvailable(id) {
     const hours = (workingHoursMap[id] || {})[weekdayKey];
@@ -136,14 +171,19 @@ function renderStaffSidebar(container, staffIds, staffMap, workingHoursMap, week
     const frei = !isAvailable(id);
     const timeLabel = hours && !hours.frei ? `${hours.start}–${hours.end}` : "frei / nicht eingetragen";
     const selected = isSelected(id, "", "");
-    return `<span class="chip chip-source ${frei ? "chip-conflict" : ""} ${selected ? "selected" : ""}" draggable="true"
+    const assignedCount = assignedShiftCount(cells, id);
+    const classes = ["chip", "chip-source"];
+    if (frei) classes.push("chip-conflict");
+    if (selected) classes.push("selected");
+    classes.push(assignedCount >= 2 ? "chip-placed" : "chip-open");
+    return `<span class="${classes.join(" ")}" draggable="true"
                 onclick="chipClick(event, '${id}', '', '')"
                 ondragstart="roomGridDragStart(event, '${id}', '', '')"
                 title="${escAttr(timeLabel)}">${escapeHtml(s.name)}</span>`;
   }
 
   let html = '<div class="staff-sidebar" onclick="sidebarAreaClick()" ondragover="roomGridAllowDrop(event)" ondrop="roomGridDropToSidebar(event)">';
-  html += '<h4>Verfügbares Personal</h4><p class="hint">Antippen zum Auswählen, dann Zielbereich antippen. Auf freie Stelle hier tippen entfernt jemanden aus der Einteilung.</p>';
+  html += '<h4>Verfügbares Personal</h4><p class="hint">Antippen zum Auswählen, dann Zielbereich antippen. Auf freie Stelle hier tippen entfernt jemanden aus der Einteilung. Ausgegraut = schon in beiden Schichten eingeteilt.</p>';
 
   if (weekdayKey) {
     const ids = staffIds.filter(id => staffMap[id]);
@@ -165,7 +205,7 @@ function refreshUI() {
   if (_gridArgs) renderRoomGrid(_gridArgs.container, _gridArgs.opts);
   if (_sidebarArgs) {
     const a = _sidebarArgs;
-    renderStaffSidebar(a.container, a.staffIds, a.staffMap, a.workingHoursMap, a.weekdayKey);
+    renderStaffSidebar(a.container, a.staffIds, a.staffMap, a.workingHoursMap, a.weekdayKey, a.cells);
   }
 }
 
@@ -233,4 +273,8 @@ function roomGridDropToSidebar(ev) {
 
 function roomGridRemoveClick(shiftKey, roomKey, staffId) {
   if (currentHandlers && currentHandlers.onRemove) currentHandlers.onRemove(shiftKey, roomKey, staffId);
+}
+
+function roomGridTogglePickup(staffId) {
+  if (currentHandlers && currentHandlers.onTogglePickup) currentHandlers.onTogglePickup(staffId);
 }

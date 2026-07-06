@@ -77,11 +77,19 @@ nur, wenn die Datenbank noch komplett leer ist – bestehende Änderungen werden
 /staff/{staffId}                     name, gruppe, notiz, aktiv
 /workingHours/{staffId}/{mo..fr}      start, end, frei
 /weeklyTemplate/{mo..fr}/{a|b}/{raum} [staffId, ...]   – a = 11:45–13:00, b = ab 13:00
-/dailyOverrides/{datumISO}/assignments/{a|b}/{raum}     [staffId, ...] – Tages-Ausnahme
-                                                          (× am Chip = für heute raus, z.B.
-                                                          krank/verhindert; Drag & Drop = spontane
-                                                          Zusatzkraft oder länger Bleibende)
+/dailyOverrides/{datumISO}/removed/{a|b}/{raum}  [staffId, ...] – für heute aus dieser
+                                                   Wochenplan-Zelle entfernt (z.B. krank)
+/dailyOverrides/{datumISO}/added/{a|b}/{raum}    [staffId, ...] – für heute zusätzlich in
+                                                   diese Zelle (nicht im Wochenplan)
+/dailyOverrides/{datumISO}/pickup                staffId – holt heute um 12:20 die
+                                                   Heimgehkinder ab
 ```
+
+Die Tagesübersicht speichert also nie eine Kopie des Wochenplans, sondern nur die Differenz
+dazu. Änderungen am Wochenplan wirken sich dadurch sofort auch auf den aktuellen Tag aus –
+außer für Zellen, die für genau diesen einen Tag ausdrücklich angepasst wurden (× am Chip =
+für heute raus, z.B. krank/verhindert; Drag & Drop/Antippen aus dem Pool = spontane
+Zusatzkraft oder länger Bleibende).
 
 ## Lokal starten
 

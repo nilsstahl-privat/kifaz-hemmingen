@@ -1,8 +1,8 @@
-// Seiten-Logik für die Tagesübersicht. Die heutige Einteilung ist direkt
-// bearbeitbar (wie die Wochenplanung), schreibt aber in eine Tages-Ausnahme
-// statt in den dauerhaften Wochenplan. So lassen sich spontan zusätzliche
-// Personen reinziehen oder jemand für heute entfernen (× am Chip = "krank/
-// verhindert für heute raus"), ohne den Wochenplan zu verändern.
+// Seiten-Logik für die Tagesübersicht. Die heutige Einteilung berechnet sich live
+// aus dem dauerhaften Wochenplan plus einer Differenz für genau diesen Tag
+// (removed/added) – Änderungen am Wochenplan zeigen sich also sofort auch heute,
+// außer für Personen, die für heute ausdrücklich entfernt oder zusätzlich
+// eingeteilt wurden (× am Chip = "krank/verhindert für heute raus").
 
 let staffMap = {};
 let workingHoursMap = {};
@@ -26,7 +26,6 @@ function init() {
   title.textContent = weekdayLabel(weekdayKey) + ", " + dateISO;
 
   seedIfEmpty();
-  ensureDailyAssignmentsInitialized(weekdayKey, dateISO);
 
   watchStaff(data => { staffMap = data; renderAll(); });
   watchWorkingHours(data => { workingHoursMap = data; renderAll(); });
@@ -36,14 +35,16 @@ function init() {
 
 function mergedCells() {
   const template = weeklyTemplate[weekdayKey] || {};
-  const overrideAssignments = dailyOverride.assignments || {};
+  const removed = dailyOverride.removed || {};
+  const added = dailyOverride.added || {};
   const result = {};
   SHIFTS.forEach(shift => {
     result[shift.key] = {};
+    const templateShift = template[shift.key] || {};
+    const removedShift = removed[shift.key] || {};
+    const addedShift = added[shift.key] || {};
     ROOMS.forEach(room => {
-      const overrideArr = overrideAssignments[shift.key] && overrideAssignments[shift.key][room.key];
-      const templateArr = (template[shift.key] && template[shift.key][room.key]) || [];
-      result[shift.key][room.key] = overrideArr !== undefined ? overrideArr.slice() : templateArr.slice();
+      result[shift.key][room.key] = dailyMergedShiftRoom(templateShift, removedShift, addedShift, room.key);
     });
   });
   return result;
@@ -52,18 +53,20 @@ function mergedCells() {
 function renderAll() {
   if (!weekdayKey) return;
 
+  const cells = mergedCells();
+
   renderRoomGrid(document.getElementById("room-grid"), {
     weekdayKey,
-    cells: mergedCells(),
+    cells,
     staffMap,
     workingHoursMap,
     editable: true,
-    onDrop: (shift, room, staffId) =>
-      addStaffToCell("dailyOverrides/" + dateISO + "/assignments", shift, room, staffId),
-    onRemove: (shift, room, staffId) =>
-      removeStaffFromCell("dailyOverrides/" + dateISO + "/assignments", shift, room, staffId)
+    pickup: { personId: dailyOverride.pickup || null },
+    onDrop: (shift, room, staffId) => addStaffToDailyCell(dateISO, weekdayKey, shift, room, staffId),
+    onRemove: (shift, room, staffId) => removeStaffFromDailyCell(dateISO, weekdayKey, shift, room, staffId),
+    onTogglePickup: staffId => setPickupPerson(dateISO, staffId)
   });
 
   const activeIds = Object.keys(staffMap).filter(id => staffMap[id].aktiv !== false);
-  renderStaffSidebar(document.getElementById("sidebar"), activeIds, staffMap, workingHoursMap, weekdayKey);
+  renderStaffSidebar(document.getElementById("sidebar"), activeIds, staffMap, workingHoursMap, weekdayKey, cells);
 }

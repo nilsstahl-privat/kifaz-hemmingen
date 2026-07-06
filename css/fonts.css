@@ -50,3 +50,4 @@
 .fa-plus::before { content: "\2b"; }
 .fa-trash::before { content: "\f1f8"; }
 .fa-xmark::before { content: "\f00d"; }
+.fa-house::before { content: "\f015"; }

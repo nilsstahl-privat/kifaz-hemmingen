@@ -46,5 +46,5 @@ function renderAll() {
   });
 
   const activeIds = Object.keys(staffMap).filter(id => staffMap[id].aktiv !== false);
-  renderStaffSidebar(document.getElementById("sidebar"), activeIds, staffMap, workingHoursMap, selectedDay);
+  renderStaffSidebar(document.getElementById("sidebar"), activeIds, staffMap, workingHoursMap, selectedDay, cells);
 }

@@ -257,6 +257,16 @@ main {
   color: var(--color-conflict);
 }
 
+/* Pool-Chips: noch mind. eine Schicht offen -> hervorgehoben. */
+.chip-open {
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+/* Pool-Chips: schon in beiden Schichten irgendwo eingeteilt -> nichts mehr zu tun. */
+.chip-placed {
+  opacity: 0.45;
+}
+
 .chip.selected {
   background: var(--color-primary);
   border-color: var(--color-primary-dark);
@@ -283,6 +293,31 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.chip-pickup {
+  border: none;
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 6px;
+  min-width: 28px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip-pickup:hover { opacity: 0.9; }
+
+.chip-pickup.active {
+  opacity: 1;
+  color: var(--color-primary-dark);
+  background: var(--color-yellow);
+  border-radius: 999px;
 }
 
 .staff-sidebar {

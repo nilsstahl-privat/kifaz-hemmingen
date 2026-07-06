@@ -60,31 +60,52 @@ function deleteStaffEverywhere(staffId) {
     let changed = false;
     for (const date of Object.keys(overrides)) {
       const day = overrides[date] || {};
-      const assignments = day.assignments || {};
-      for (const shift of Object.keys(assignments)) {
-        for (const room of Object.keys(assignments[shift] || {})) {
-          const arr = assignments[shift][room] || [];
-          if (arr.includes(staffId)) {
-            assignments[shift][room] = arr.filter(id => id !== staffId);
-            changed = true;
+      if (day.pickup === staffId) {
+        day.pickup = null;
+        changed = true;
+      }
+      ["removed", "added"].forEach(kind => {
+        const tree = day[kind] || {};
+        for (const shift of Object.keys(tree)) {
+          for (const room of Object.keys(tree[shift] || {})) {
+            const arr = tree[shift][room] || [];
+            if (arr.includes(staffId)) {
+              tree[shift][room] = arr.filter(id => id !== staffId);
+              changed = true;
+            }
           }
         }
-      }
+      });
     }
     if (changed) db.ref("dailyOverrides").set(overrides);
   });
 }
 
-// basePath ist entweder "weeklyTemplate/mo" (Wochenplanung) oder
-// "dailyOverrides/2026-07-06/assignments" (Tages-Ausnahme).
+// basePath ist "weeklyTemplate/mo" etc. (Wochenplanung). Für die Tagesübersicht
+// gibt es die eigenen Funktionen addStaffToDailyCell/removeStaffFromDailyCell
+// weiter unten, die nicht den Wochenplan selbst verändern.
+//
+// Sicherheitsregel: Eine Person kann nie gleichzeitig in zwei Räumen derselben
+// Schicht stehen (wohl aber in unterschiedlichen Räumen verschiedener Schichten,
+// z.B. vormittags Küche, ab 13:00 Sonne). Beim Zuordnen wird sie deshalb zuerst
+// aus allen anderen Räumen dieser einen Schicht entfernt.
 function addStaffToCell(basePath, shiftKey, roomKey, staffId) {
-  const path = basePath + "/" + shiftKey + "/" + roomKey;
-  db.ref(path).once("value").then(snap => {
-    const arr = snap.val() || [];
-    if (!arr.includes(staffId)) {
-      arr.push(staffId);
-      db.ref(path).set(arr);
-    }
+  const shiftPath = basePath + "/" + shiftKey;
+  db.ref(shiftPath).once("value").then(snap => {
+    const shiftData = snap.val() || {};
+    ROOMS.forEach(room => {
+      if (room.key === roomKey) return;
+      const arr = shiftData[room.key] || [];
+      if (arr.includes(staffId)) {
+        const filtered = arr.filter(id => id !== staffId);
+        if (filtered.length) shiftData[room.key] = filtered;
+        else delete shiftData[room.key];
+      }
+    });
+    const targetArr = shiftData[roomKey] || [];
+    if (!targetArr.includes(staffId)) targetArr.push(staffId);
+    shiftData[roomKey] = targetArr;
+    db.ref(shiftPath).set(shiftData);
   });
 }
 
@@ -96,15 +117,89 @@ function removeStaffFromCell(basePath, shiftKey, roomKey, staffId) {
   });
 }
 
-// Kopiert den Wochenplan eines Wochentags einmalig in die Tages-Ausnahme,
-// damit anschließende Drag&Drop-Änderungen für diesen einen Tag unabhängig
-// vom dauerhaften Wochenplan bearbeitet werden können.
-function ensureDailyAssignmentsInitialized(weekdayKey, dateISO) {
-  const overridePath = "dailyOverrides/" + dateISO + "/assignments";
-  return db.ref(overridePath).once("value").then(snap => {
-    if (snap.val()) return;
-    return db.ref("weeklyTemplate/" + weekdayKey).once("value").then(tSnap => {
-      return db.ref(overridePath).set(tSnap.val() || {});
+// --- Tages-Ausnahmen für die Tagesübersicht ---
+//
+// Werden NICHT als Kopie des Wochenplans gespeichert, sondern als Differenz
+// (removed/added) dazu. Dadurch wirken sich Änderungen am dauerhaften
+// Wochenplan sofort auch auf den heutigen Tag aus – außer für Personen, die
+// für genau diesen einen Tag ausdrücklich entfernt oder zusätzlich
+// eingeteilt wurden, das bleibt unabhängig vom Wochenplan bestehen.
+
+function dailyMergedShiftRoom(templateShift, removedShift, addedShift, roomKey) {
+  const templateArr = (templateShift && templateShift[roomKey]) || [];
+  const removedArr = (removedShift && removedShift[roomKey]) || [];
+  const addedArr = (addedShift && addedShift[roomKey]) || [];
+  const base = templateArr.filter(id => !removedArr.includes(id));
+  const extra = addedArr.filter(id => !base.includes(id));
+  return base.concat(extra);
+}
+
+// Wie addStaffToCell, aber für die Tages-Ausnahme: schreibt nie in den
+// Wochenplan selbst, sondern nur in removed/added für dieses eine Datum.
+// Dieselbe Sicherheitsregel gilt: nie zwei Räume gleichzeitig in derselben Schicht.
+function addStaffToDailyCell(dateISO, weekdayKey, toShift, toRoom, staffId) {
+  const templatePath = "weeklyTemplate/" + weekdayKey + "/" + toShift;
+  const removedPath = "dailyOverrides/" + dateISO + "/removed/" + toShift;
+  const addedPath = "dailyOverrides/" + dateISO + "/added/" + toShift;
+
+  Promise.all([
+    db.ref(templatePath).once("value").then(s => s.val() || {}),
+    db.ref(removedPath).once("value").then(s => s.val() || {}),
+    db.ref(addedPath).once("value").then(s => s.val() || {})
+  ]).then(([templateShift, removedShift, addedShift]) => {
+    ROOMS.forEach(room => {
+      if (room.key === toRoom) return;
+      const inThisRoom = dailyMergedShiftRoom(templateShift, removedShift, addedShift, room.key).includes(staffId);
+      if (!inThisRoom) return;
+      if ((templateShift[room.key] || []).includes(staffId)) {
+        const removedArr = removedShift[room.key] || [];
+        if (!removedArr.includes(staffId)) removedShift[room.key] = removedArr.concat(staffId);
+      } else {
+        const addedArr = (addedShift[room.key] || []).filter(id => id !== staffId);
+        if (addedArr.length) addedShift[room.key] = addedArr;
+        else delete addedShift[room.key];
+      }
     });
+
+    if ((templateShift[toRoom] || []).includes(staffId)) {
+      const removedArr = (removedShift[toRoom] || []).filter(id => id !== staffId);
+      if (removedArr.length) removedShift[toRoom] = removedArr;
+      else delete removedShift[toRoom];
+    } else {
+      const addedArr = addedShift[toRoom] || [];
+      if (!addedArr.includes(staffId)) addedShift[toRoom] = addedArr.concat(staffId);
+    }
+
+    db.ref(removedPath).set(removedShift);
+    db.ref(addedPath).set(addedShift);
+  });
+}
+
+function removeStaffFromDailyCell(dateISO, weekdayKey, shiftKey, roomKey, staffId) {
+  const templatePath = "weeklyTemplate/" + weekdayKey + "/" + shiftKey + "/" + roomKey;
+  const removedPath = "dailyOverrides/" + dateISO + "/removed/" + shiftKey + "/" + roomKey;
+  const addedPath = "dailyOverrides/" + dateISO + "/added/" + shiftKey + "/" + roomKey;
+
+  db.ref(templatePath).once("value").then(snap => {
+    const templateArr = snap.val() || [];
+    if (templateArr.includes(staffId)) {
+      db.ref(removedPath).once("value").then(rSnap => {
+        const arr = rSnap.val() || [];
+        if (!arr.includes(staffId)) db.ref(removedPath).set(arr.concat(staffId));
+      });
+    } else {
+      db.ref(addedPath).once("value").then(aSnap => {
+        const arr = (aSnap.val() || []).filter(id => id !== staffId);
+        db.ref(addedPath).set(arr.length ? arr : null);
+      });
+    }
+  });
+}
+
+// Wer holt heute um 12:20 die Heimgehkinder ab? Nur eine Person pro Tag;
+// nochmaliges Antippen derselben Person hebt die Zuteilung wieder auf.
+function setPickupPerson(dateISO, staffId) {
+  db.ref("dailyOverrides/" + dateISO + "/pickup").once("value").then(snap => {
+    db.ref("dailyOverrides/" + dateISO + "/pickup").set(snap.val() === staffId ? null : staffId);
   });
 }
