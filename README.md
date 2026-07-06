@@ -17,7 +17,7 @@ FA6-Unicode-Codepoint ergänzen.
 
 ## Seiten
 
-- `index.html` – Tagesübersicht: heutige Raumeinteilung, direkt bearbeitbar (Person für heute raus per ×, spontane Zusatzkräfte oder länger Bleibende per Drag & Drop), ohne den Wochenplan zu verändern
+- `index.html` – Tagesübersicht: Raumeinteilung für einen frei wählbaren Tag (heute oder vorausschauend, z.B. für einen Ausflug), direkt bearbeitbar (Person raus per ×, spontane Zusatzkräfte oder länger Bleibende per Drag & Drop), ohne den Wochenplan zu verändern. Dazu Datums-Navigation (Schnellzugriff nächste Tage + Datumsfeld) und eine Freitext-Notiz pro Tag
 - `week.html` – Wochenübersicht & -planung: dauerhafter Wochenplan per Drag & Drop
 - `staff.html` – Personal anlegen/löschen, Arbeitszeiten pro Wochentag pflegen
 
@@ -94,6 +94,8 @@ nur, wenn die Datenbank noch komplett leer ist – bestehende Änderungen werden
 /dailyOverrides/{datumISO}/gartenModus  true | (fehlt) – Garten-Modus für diesen einen Tag
                                         (nur Tagesübersicht): fasst alle Nicht-Küche-Räume
                                         zu einer "Garten"-Gruppe zusammen
+/dailyOverrides/{datumISO}/notiz  Freitext (z.B. "Ausflug Sonnengruppe") – für alle
+                                  sichtbar, die diesen Tag in der Tagesübersicht ansehen
 ```
 
 Die Tagesübersicht speichert also nie eine Kopie des Wochenplans, sondern nur die Differenz

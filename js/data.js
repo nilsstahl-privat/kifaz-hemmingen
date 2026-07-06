@@ -14,8 +14,18 @@ function watchWeeklyTemplate(callback) {
   db.ref("weeklyTemplate").on("value", snap => callback(snap.val() || {}));
 }
 
+// Gibt die Firebase-Referenz zurück, damit der Aufrufer bei einem Datumswechsel
+// mit ref.off() wieder abbestellen kann (siehe index.js setSelectedDate).
 function watchDailyOverride(dateISO, callback) {
-  db.ref("dailyOverrides/" + dateISO).on("value", snap => callback(snap.val() || {}));
+  const ref = db.ref("dailyOverrides/" + dateISO);
+  ref.on("value", snap => callback(snap.val() || {}));
+  return ref;
+}
+
+// Freitext-Notiz für einen konkreten Tag (heute oder vorausschauend), z.B.
+// "Ausflug Sonnengruppe". Für alle sichtbar, die diesen Tag anschauen.
+function setDailyNote(dateISO, text) {
+  db.ref("dailyOverrides/" + dateISO + "/notiz").set(text || null);
 }
 
 function addStaff(staffData) {

@@ -362,6 +362,51 @@ main {
   justify-content: center;
 }
 
+.date-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.date-nav .tabs {
+  margin-bottom: 0;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-picker input[type="date"] {
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  background: white;
+}
+
+.daily-note {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  resize: vertical;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-body);
+  font-size: 14px;
+  background: #fffdf7;
+  margin-bottom: 10px;
+}
+
+.daily-note:focus {
+  outline: 2px solid rgba(221, 122, 31, 0.4);
+  outline-offset: 1px;
+}
+
 .pickup-editor {
   display: flex;
   flex-wrap: wrap;

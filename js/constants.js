@@ -44,11 +44,31 @@ const GRUPPEN = [
 ];
 
 function todayWeekdayKey() {
-  return JS_WEEKDAY_TO_KEY[new Date().getDay()] || null;
+  return weekdayKeyForDate(todayISO());
 }
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Wochentag für ein beliebiges Datum (nicht nur heute) – z.B. für die
+// vorausschauende Tagesübersicht. Bewusst über Jahr/Monat/Tag konstruiert
+// (nicht new Date(iso)), damit es unabhängig von der Zeitzone immer den
+// richtigen lokalen Wochentag liefert.
+function weekdayKeyForDate(dateISO) {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return JS_WEEKDAY_TO_KEY[date.getDay()] || null;
+}
+
+function addDaysToISO(dateISO, deltaDays) {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() + deltaDays);
+  const yy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
 }
 
 function weekdayLabel(key) {
