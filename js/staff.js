@@ -60,7 +60,7 @@ function renderStaffTable() {
       </td>`;
     });
 
-    html += `<td><button type="button" class="btn danger small" onclick="onDeleteStaff('${id}')">Löschen</button></td></tr>`;
+    html += `<td><button type="button" class="btn danger small" onclick="onDeleteStaff('${id}')"><i class="fa-solid fa-trash"></i> Löschen</button></td></tr>`;
   });
 
   html += "</tbody></table>";

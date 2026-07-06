@@ -6,6 +6,14 @@ per Drag & Drop, Personal- und Arbeitszeitenverwaltung.
 Reines HTML/CSS/JavaScript, keine Build-Tools nötig. Als Datenbank wird Firebase Realtime
 Database genutzt (kostenlose Spark-Stufe reicht locker).
 
+## Schriften & Icons
+
+Überschriften/Labels nutzen **Bebas Neue**, Fließtext **Mulish** (= Muli) – beides aktuell über
+Google Fonts eingebunden (`<link>` in jeder HTML-Datei), da die Original-Dateien (`Muli-*.woff2`)
+noch nicht im Projekt liegen. Icons kommen über Font Awesome (CDN). Sobald die lokalen
+`.woff2`-Dateien vorliegen, können sie in `css/` abgelegt und per `@font-face` eingebunden werden –
+die restlichen `font-family`-Angaben im CSS bleiben dabei unverändert.
+
 ## Seiten
 
 - `index.html` – Tagesübersicht: heutige Raumeinteilung, direkt bearbeitbar (Person für heute raus per ×, spontane Zusatzkräfte oder länger Bleibende per Drag & Drop), ohne den Wochenplan zu verändern

@@ -68,7 +68,7 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable) {
     ? `draggable="true" ondragstart="roomGridDragStart(event, '${id}', '${shiftKey}', '${roomKey}')"`
     : "";
   const removeBtn = editable
-    ? `<button type="button" class="chip-remove" title="Für heute raus (z.B. krank/verhindert)" onclick="roomGridRemoveClick('${shiftKey}','${roomKey}','${id}')">×</button>`
+    ? `<button type="button" class="chip-remove" title="Entfernen" onclick="roomGridRemoveClick('${shiftKey}','${roomKey}','${id}')"><i class="fa-solid fa-xmark"></i></button>`
     : "";
   const title = conflict
     ? ` title="${escAttr("Laut Arbeitszeit an diesem Tag/in dieser Schicht eigentlich nicht da")}"`
