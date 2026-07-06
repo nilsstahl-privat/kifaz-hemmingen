@@ -36,7 +36,12 @@ function onAddStaffSubmit(ev) {
 }
 
 function renderStaffTable() {
-  const ids = Object.keys(staffMap).sort((a, b) => staffMap[a].name.localeCompare(staffMap[b].name));
+  const groupOrder = GRUPPEN.map(g => g.key);
+  const ids = Object.keys(staffMap).sort((a, b) => {
+    const groupDiff = groupOrder.indexOf(staffMap[a].gruppe || "") - groupOrder.indexOf(staffMap[b].gruppe || "");
+    if (groupDiff !== 0) return groupDiff;
+    return staffMap[a].name.localeCompare(staffMap[b].name);
+  });
   let html = '<table class="staff-table hours-table"><thead><tr><th>Name</th><th>Gruppe</th><th>Notiz</th><th>Aktiv</th>';
   WEEKDAYS.forEach(w => { html += `<th>${escapeHtml(w.label)}</th>`; });
   html += "<th></th></tr></thead><tbody>";
