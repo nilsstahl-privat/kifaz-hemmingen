@@ -34,6 +34,9 @@ function selectDay(key) {
 
 function renderAll() {
   const cells = weeklyTemplate[selectedDay] || {};
+  const pickup = cells.pickup || {};
+
+  renderPickupEditor(pickup);
 
   renderRoomGrid(document.getElementById("room-grid"), {
     weekdayKey: selectedDay,
@@ -41,12 +44,25 @@ function renderAll() {
     staffMap,
     workingHoursMap,
     editable: true,
-    pickup: { personId: cells.pickup || null },
+    pickup: { activeIds: [pickup.p1, pickup.p2].filter(Boolean) },
     onDrop: (shift, room, staffId) => addStaffToCell("weeklyTemplate/" + selectedDay, shift, room, staffId),
-    onRemove: (shift, room, staffId) => removeStaffFromCell("weeklyTemplate/" + selectedDay, shift, room, staffId),
-    onTogglePickup: staffId => setWeeklyPickup(selectedDay, staffId)
+    onRemove: (shift, room, staffId) => removeStaffFromCell("weeklyTemplate/" + selectedDay, shift, room, staffId)
   });
 
   const activeIds = Object.keys(staffMap).filter(id => staffMap[id].aktiv !== false);
   renderStaffSidebar(document.getElementById("sidebar"), activeIds, staffMap, workingHoursMap, selectedDay, cells);
+}
+
+function renderPickupEditor(pickup) {
+  const el = document.getElementById("pickup-editor");
+  if (!el) return;
+  el.innerHTML = `
+    <strong>Abholung 12:20 (Standard für ${escapeHtml(weekdayLabel(selectedDay))}):</strong>
+    <select onchange="onWeeklyPickupChange('p1', this.value)">${renderStaffSelectOptions(staffMap, pickup.p1)}</select>
+    <select onchange="onWeeklyPickupChange('p2', this.value)">${renderStaffSelectOptions(staffMap, pickup.p2)}</select>
+  `;
+}
+
+function onWeeklyPickupChange(slot, staffId) {
+  setWeeklyPickupSlot(selectedDay, slot, staffId);
 }

@@ -56,6 +56,12 @@ function weekdayLabel(key) {
   return wd ? wd.label : key;
 }
 
+// "2026-07-06" -> "06.07.2026"
+function formatDateDMY(iso) {
+  const [y, m, d] = iso.split("-");
+  return `${d}.${m}.${y}`;
+}
+
 function roomLabel(key) {
   const r = ROOMS.find(r => r.key === key);
   return r ? r.label : key;

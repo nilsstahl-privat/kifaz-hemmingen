@@ -48,15 +48,6 @@ function isSelected(staffId, shiftKey, roomKey) {
     selectedItem.fromRoom === roomKey;
 }
 
-// Wer kommt für die Regelkinder-Abholung um 12:20 infrage? Nur Personen, die
-// entweder bis spätestens 12:30 gehen oder in einem Raum mit schon 3+ Leuten
-// stehen (dort fällt das kurze Fehlen nicht unter die Mindestbesetzung).
-function isPickupEligible(hours, roomCount) {
-  if (roomCount >= 3) return true;
-  if (hours && !hours.frei && hours.end && hhmmToMin(hours.end) <= hhmmToMin("12:30")) return true;
-  return false;
-}
-
 // Garten-Modus (nur Tagesübersicht): fasst alle Nicht-Küche-Räume dieser Schicht
 // zu einer Liste zusammen. Jeder Eintrag merkt sich seinen tatsächlichen Raum
 // (actualRoom), damit Entfernen/Verschieben weiterhin die richtige Zelle trifft.
@@ -128,12 +119,7 @@ function renderRoomGrid(container, opts) {
         const conflict = !!weekdayKey && !isWorkingDuringShift(hours, shift.key);
         const leavesAt = weekdayKey ? earlyLeaveTime(hours, shift.key) : null;
         const selected = isSelected(id, shift.key, actualRoom);
-        let pickup = null;
-        if (opts.pickup && shift.key === "a") {
-          const isPickupPerson = opts.pickup.personId === id;
-          const eligible = isPickupEligible(hours, entries.length);
-          if (isPickupPerson || eligible) pickup = { active: isPickupPerson };
-        }
+        const pickup = !!(opts.pickup && shift.key === "a" && opts.pickup.activeIds.includes(id));
         html += renderChip(id, s, shift.key, actualRoom, conflict, editable, selected, leavesAt, pickup);
       });
       html += "</div></div>";
@@ -155,16 +141,16 @@ function renderChip(id, staff, shiftKey, roomKey, conflict, editable, selected, 
   const removeBtn = editable
     ? `<button type="button" class="chip-remove" title="Entfernen" onclick="event.stopPropagation(); roomGridRemoveClick('${shiftKey}','${roomKey}','${id}')"><i class="fa-solid fa-xmark"></i></button>`
     : "";
-  const pickupBtn = pickup
-    ? `<button type="button" class="chip-pickup ${pickup.active ? "active" : ""}" title="${escAttr(
+  const pickupBadge = pickup
+    ? `<span class="chip-pickup-badge" title="${escAttr(
         "Holt um 12:20 die Heimgehkinder ab (ab ca. 12:35 wieder einsetzbar)"
-      )}" onclick="event.stopPropagation(); roomGridTogglePickup('${id}')"><i class="fa-solid fa-house"></i></button>`
+      )}"><i class="fa-solid fa-house"></i></span>`
     : "";
   const title = conflict
     ? ` title="${escAttr("Laut Arbeitszeit an diesem Tag/in dieser Schicht eigentlich nicht da")}"`
     : "";
   const leaveLabel = leavesAt ? `<span class="chip-leaves">bis ${escapeHtml(leavesAt)}</span>` : "";
-  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${pickupBtn}${removeBtn}</span>`;
+  return `<span class="${classes.join(" ")}" ${clickAttr} ${dragAttrs}${title}>${escapeHtml(staff.name)}${leaveLabel}${pickupBadge}${removeBtn}</span>`;
 }
 
 // Gibt es noch eine Schicht, in der diese Person laut Arbeitszeiten überhaupt
@@ -305,6 +291,14 @@ function roomGridRemoveClick(shiftKey, roomKey, staffId) {
   if (currentHandlers && currentHandlers.onRemove) currentHandlers.onRemove(shiftKey, roomKey, staffId);
 }
 
-function roomGridTogglePickup(staffId) {
-  if (currentHandlers && currentHandlers.onTogglePickup) currentHandlers.onTogglePickup(staffId);
+// Baut ein <select> mit allen aktiven Personen für die Abholungs-Dropdowns.
+function renderStaffSelectOptions(staffMap, selectedId) {
+  const ids = Object.keys(staffMap)
+    .filter(id => staffMap[id].aktiv !== false)
+    .sort((a, b) => staffMap[a].name.localeCompare(staffMap[b].name));
+  let html = `<option value="">– niemand –</option>`;
+  ids.forEach(id => {
+    html += `<option value="${id}" ${id === selectedId ? "selected" : ""}>${escapeHtml(staffMap[id].name)}</option>`;
+  });
+  return html;
 }

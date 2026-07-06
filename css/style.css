@@ -295,30 +295,39 @@ main {
   justify-content: center;
 }
 
-.chip-pickup {
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  background: rgba(255, 255, 255, 0.6);
-  color: inherit;
-  opacity: 0.85;
-  cursor: pointer;
-  font-size: 13px;
+/* Reines Info-Badge (nicht klickbar) – wer heute laut Dropdown-Auswahl
+   die Heimgehkinder-Abholung um 12:20 übernimmt. */
+.chip-pickup-badge {
+  color: var(--color-primary-dark);
+  background: var(--color-yellow);
+  font-size: 12px;
   line-height: 1;
   padding: 6px;
-  min-width: 28px;
-  min-height: 28px;
+  min-width: 24px;
+  min-height: 24px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.chip-pickup:hover { opacity: 1; }
+.pickup-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
 
-.chip-pickup.active {
-  opacity: 1;
-  color: var(--color-primary-dark);
-  background: var(--color-yellow);
-  border-radius: 999px;
+.pickup-editor strong {
+  font-size: 14px;
+}
+
+.pickup-editor select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  font-size: 14px;
 }
 
 .staff-sidebar {

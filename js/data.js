@@ -42,9 +42,11 @@ function deleteStaffEverywhere(staffId) {
     const tmpl = snap.val() || {};
     let changed = false;
     for (const day of Object.keys(tmpl)) {
-      if (tmpl[day].pickup === staffId) {
-        tmpl[day].pickup = null;
-        changed = true;
+      const pickup = tmpl[day].pickup;
+      if (pickup) {
+        ["p1", "p2"].forEach(slot => {
+          if (pickup[slot] === staffId) { pickup[slot] = ""; changed = true; }
+        });
       }
       for (const shift of Object.keys(tmpl[day] || {})) {
         if (shift === "pickup") continue;
@@ -65,9 +67,10 @@ function deleteStaffEverywhere(staffId) {
     let changed = false;
     for (const date of Object.keys(overrides)) {
       const day = overrides[date] || {};
-      if (day.pickup === staffId) {
-        day.pickup = null;
-        changed = true;
+      if (day.pickup) {
+        ["p1", "p2"].forEach(slot => {
+          if (day.pickup[slot] === staffId) { day.pickup[slot] = ""; changed = true; }
+        });
       }
       ["removed", "added"].forEach(kind => {
         const tree = day[kind] || {};
@@ -206,20 +209,25 @@ function removeStaffFromDailyCell(dateISO, weekdayKey, shiftKey, roomKey, staffI
   });
 }
 
-// Wer holt heute um 12:20 die Heimgehkinder ab? Wenn für heute nichts explizit
-// gesetzt ist, gilt der wiederkehrende Standard aus dem Wochenplan (setWeeklyPickup).
-// value: staffId (heutige Sonderregel), "" (explizit niemand heute, überschreibt
-// den Wochenplan-Standard) oder null (Sonderregel für heute aufheben).
-function setDailyPickup(dateISO, value) {
-  db.ref("dailyOverrides/" + dateISO + "/pickup").set(value === null ? null : value);
+// Wer holt um 12:20 die Heimgehkinder ab? Zwei feste Slots (p1/p2), explizit per
+// Dropdown gewählt statt automatisch berechnet. slot ist "p1" oder "p2".
+//
+// Wochenplan (wiederkehrender Standard pro Wochentag):
+function setWeeklyPickupSlot(weekdayKey, slot, staffId) {
+  db.ref("weeklyTemplate/" + weekdayKey + "/pickup/" + slot).set(staffId || "");
 }
 
-// Wiederkehrender Standard für einen Wochentag (Wochenplanung). Nochmaliges
-// Antippen derselben Person hebt die Zuteilung wieder auf.
-function setWeeklyPickup(weekdayKey, staffId) {
-  db.ref("weeklyTemplate/" + weekdayKey + "/pickup").once("value").then(snap => {
-    db.ref("weeklyTemplate/" + weekdayKey + "/pickup").set(snap.val() === staffId ? null : staffId);
-  });
+// Tages-Ausnahme: solange dailyOverrides/{datum}/pickup gar nicht existiert, gilt
+// der Wochenplan-Standard. Schreibt immer beide Slots zusammen (der Aufrufer
+// übergibt den aktuell wirksamen Stand), damit ein geänderter Slot nicht den
+// anderen, noch aus dem Wochenplan-Standard stammenden Slot leer räumt.
+function setDailyPickup(dateISO, slots) {
+  db.ref("dailyOverrides/" + dateISO + "/pickup").set({ p1: slots.p1 || "", p2: slots.p2 || "" });
+}
+
+// Setzt die heutige Sonderregel zurück, damit wieder der Wochenplan-Standard gilt.
+function clearDailyPickupOverride(dateISO) {
+  db.ref("dailyOverrides/" + dateISO + "/pickup").set(null);
 }
 
 // Garten-Modus (nur Tagesübersicht): fasst alle Nicht-Küche-Räume für diesen

@@ -79,16 +79,18 @@ nur, wenn die Datenbank noch komplett leer ist – bestehende Änderungen werden
 /weeklyTemplate/{mo..fr}/{a|b}/{raum} [staffId, ...]   – a = 11:45–13:00, b = ab 13:00
                                                           ("garten" ist ein reiner
                                                           Tages-Pseudo-Raum, kommt hier nie vor)
-/weeklyTemplate/{mo..fr}/pickup        staffId – wiederkehrender Standard: wer holt an
-                                                   diesem Wochentag die Heimgehkinder ab
+/weeklyTemplate/{mo..fr}/pickup/{p1|p2} staffId – wiederkehrender Standard (2 Slots,
+                                                    per Dropdown in der Wochenplanung
+                                                    gewählt): wer holt an diesem
+                                                    Wochentag die Heimgehkinder ab
 /dailyOverrides/{datumISO}/removed/{a|b}/{raum}  [staffId, ...] – für heute aus dieser
                                                    Wochenplan-Zelle entfernt (z.B. krank)
 /dailyOverrides/{datumISO}/added/{a|b}/{raum}    [staffId, ...] – für heute zusätzlich in
                                                    diese Zelle (nicht im Wochenplan), inkl.
                                                    Zuordnungen zum Pseudo-Raum "garten"
-/dailyOverrides/{datumISO}/pickup     staffId | "" | (fehlt) – Tages-Sonderregel für die
-                                        Abholung; "" = explizit niemand heute, fehlt =
-                                        wiederkehrender Standard aus dem Wochenplan gilt
+/dailyOverrides/{datumISO}/pickup/{p1|p2}  staffId | "" – Tages-Sonderregel (Dropdown in
+                                        der Tagesübersicht); Objekt fehlt = wiederkehrender
+                                        Standard aus dem Wochenplan gilt für beide Slots
 /dailyOverrides/{datumISO}/gartenModus  true | (fehlt) – Garten-Modus für diesen einen Tag
                                         (nur Tagesübersicht): fasst alle Nicht-Küche-Räume
                                         zu einer "Garten"-Gruppe zusammen

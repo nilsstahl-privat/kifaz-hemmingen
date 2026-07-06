@@ -23,11 +23,11 @@ function init() {
 
   const title = document.getElementById("day-title");
   if (!weekdayKey) {
-    title.textContent = "Heute (" + dateISO + ") – am Wochenende gibt es keinen Mittagsplan";
+    title.textContent = "Heute (" + formatDateDMY(dateISO) + ") – am Wochenende gibt es keinen Mittagsplan";
     document.getElementById("day-content").style.display = "none";
     return;
   }
-  title.textContent = weekdayLabel(weekdayKey) + ", " + dateISO;
+  title.textContent = weekdayLabel(weekdayKey) + ", " + formatDateDMY(dateISO);
 
   seedIfEmpty();
 
@@ -57,13 +57,13 @@ function mergedCells() {
   return result;
 }
 
-// Wer holt heute die Heimgehkinder ab? Eine Tages-Sonderregel (auch "explizit
-// niemand" über "") geht vor dem wiederkehrenden Wochenplan-Standard.
-function effectivePickup() {
-  const dailyVal = dailyOverride.pickup;
-  if (dailyVal !== undefined && dailyVal !== null) return dailyVal || null;
-  const weeklyVal = weeklyTemplate[weekdayKey] && weeklyTemplate[weekdayKey].pickup;
-  return weeklyVal || null;
+// Wer holt heute die Heimgehkinder ab? Eine Tages-Sonderregel überschreibt beide
+// Slots und geht vor dem wiederkehrenden Wochenplan-Standard.
+function effectivePickupSlots() {
+  const daily = dailyOverride.pickup;
+  const isOverridden = daily !== undefined && daily !== null && typeof daily === "object";
+  const source = isOverridden ? daily : ((weeklyTemplate[weekdayKey] && weeklyTemplate[weekdayKey].pickup) || {});
+  return { p1: source.p1 || "", p2: source.p2 || "", isOverridden };
 }
 
 function renderAll() {
@@ -71,8 +71,10 @@ function renderAll() {
 
   const cells = mergedCells();
   const gartenModus = !!dailyOverride.gartenModus;
+  const pickupSlots = effectivePickupSlots();
 
   renderModeToggle(gartenModus);
+  renderPickupEditor(pickupSlots);
 
   renderRoomGrid(document.getElementById("room-grid"), {
     weekdayKey,
@@ -81,13 +83,9 @@ function renderAll() {
     workingHoursMap,
     editable: true,
     gartenModus,
-    pickup: { personId: effectivePickup() },
+    pickup: { activeIds: [pickupSlots.p1, pickupSlots.p2].filter(Boolean) },
     onDrop: (shift, room, staffId) => addStaffToDailyCell(dateISO, weekdayKey, shift, room, staffId),
-    onRemove: (shift, room, staffId) => removeStaffFromDailyCell(dateISO, weekdayKey, shift, room, staffId),
-    onTogglePickup: staffId => {
-      const current = effectivePickup();
-      setDailyPickup(dateISO, current === staffId ? "" : staffId);
-    }
+    onRemove: (shift, room, staffId) => removeStaffFromDailyCell(dateISO, weekdayKey, shift, room, staffId)
   });
 
   const activeIds = Object.keys(staffMap).filter(id => staffMap[id].aktiv !== false);
@@ -105,4 +103,29 @@ function renderModeToggle(gartenModus) {
 
 function setMode(enabled) {
   setGartenModus(dateISO, enabled);
+}
+
+function renderPickupEditor(slots) {
+  const el = document.getElementById("pickup-editor");
+  if (!el) return;
+  const resetBtn = slots.isOverridden
+    ? `<button type="button" class="btn small secondary" onclick="resetDailyPickup()">Zurücksetzen auf Wochenplan-Standard</button>`
+    : "";
+  el.innerHTML = `
+    <strong>Abholung 12:20 heute:</strong>
+    <select onchange="onDailyPickupChange('p1', this.value)">${renderStaffSelectOptions(staffMap, slots.p1)}</select>
+    <select onchange="onDailyPickupChange('p2', this.value)">${renderStaffSelectOptions(staffMap, slots.p2)}</select>
+    ${resetBtn}
+  `;
+}
+
+function onDailyPickupChange(slot, staffId) {
+  const current = effectivePickupSlots();
+  const updated = { p1: current.p1, p2: current.p2 };
+  updated[slot] = staffId;
+  setDailyPickup(dateISO, updated);
+}
+
+function resetDailyPickup() {
+  clearDailyPickupOverride(dateISO);
 }
