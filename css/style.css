@@ -296,22 +296,23 @@ main {
 }
 
 .chip-pickup {
-  border: none;
-  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.6);
   color: inherit;
-  opacity: 0.55;
+  opacity: 0.85;
   cursor: pointer;
   font-size: 13px;
   line-height: 1;
   padding: 6px;
   min-width: 28px;
   min-height: 28px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.chip-pickup:hover { opacity: 0.9; }
+.chip-pickup:hover { opacity: 1; }
 
 .chip-pickup.active {
   opacity: 1;
