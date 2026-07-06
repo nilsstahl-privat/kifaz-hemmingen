@@ -20,11 +20,11 @@ const SHIFTS = [
 // (Schlafraum ist normalerweise mit 1 Person besetzt).
 const ROOMS = [
   { key: "kueche", label: "Küche", checkMin: true },
-  { key: "turnraum", label: "Turnraum", checkMin: true },
+  { key: "schlafraum", label: "Schlafraum", checkMin: false },
   { key: "sonne", label: "Sonne", checkMin: true },
   { key: "wiese", label: "Wiese", checkMin: true },
   { key: "mond", label: "Mond", checkMin: true },
-  { key: "schlafraum", label: "Schlafraum", checkMin: false }
+  { key: "turnraum", label: "Turnraum", checkMin: true }
 ];
 
 const MIN_PER_ROOM = 2;
