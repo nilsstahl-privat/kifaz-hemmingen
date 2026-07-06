@@ -43,8 +43,16 @@ function earlyLeaveTime(hours, shiftKey) {
 
 // Farbton je Stammgruppe (Sonne/Wiese/Mond/keine) plus pro Person fein
 // abgestufte Helligkeit/Sättigung (viele mögliche Kombinationen, damit auch
-// innerhalb einer Gruppe jede Person unterscheidbar bleibt).
-const GROUP_HUES = { sonne: 45, wiese: 102, mond: 233, none: 73 };
+// innerhalb einer Gruppe jede Person unterscheidbar bleibt). Blau (Mond) wirkt
+// bei gleicher Sättigung fürs Auge deutlich kräftiger als Gelb/Grün, deshalb
+// eigener, niedrigerer Sättigungsbereich je Gruppe statt eines globalen.
+const GROUP_HUES = { sonne: 45, wiese: 102, mond: 220, none: 73 };
+const GROUP_SATURATION_RANGE = {
+  sonne: [50, 82],
+  wiese: [45, 75],
+  mond: [20, 38],
+  none: [45, 75]
+};
 
 function hashString(str) {
   let h = 0;
@@ -53,10 +61,12 @@ function hashString(str) {
 }
 
 function personChipStyle(staffId, gruppe) {
-  const hue = GROUP_HUES[gruppe || "none"];
+  const key = gruppe || "none";
+  const hue = GROUP_HUES[key];
+  const [satMin, satMax] = GROUP_SATURATION_RANGE[key];
   const hash = hashString(staffId);
   const lightness = 83 + (hash % 15); // 83–97%
-  const saturation = 50 + ((hash >>> 9) % 33); // 50–82%
+  const saturation = satMin + ((hash >>> 9) % (satMax - satMin + 1));
   const bg = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   const border = `hsl(${hue}, ${saturation}%, ${lightness - 16}%)`;
   const color = `hsl(${hue}, 45%, 24%)`;
