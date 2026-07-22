@@ -120,6 +120,44 @@ main {
 
 .card h2 { margin-top: 0; }
 
+/* Read-only-Infobox aus der Personalplanung (siehe js/personalplanung.js):
+   zeigt, wer am gewählten Tag abwesend ist. Rein additiv/optional. */
+.pp-panel {
+  margin: 10px 0 4px;
+  padding: 10px 14px;
+  background: #fdf3e6;
+  border: 1px solid #f2d9b8;
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+.pp-panel .pp-head {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 16px;
+  color: var(--color-primary-dark);
+}
+.pp-panel .pp-src {
+  font-family: var(--font-body);
+  text-transform: none;
+  color: var(--color-muted);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.pp-panel .pp-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+.pp-panel .pp-list li { font-size: 14px; }
+.pp-panel .pp-detail { color: var(--color-muted); font-size: 12px; }
+
+/* Nav-Link zum separaten Personalplanungs-Tool (öffnet in neuem Tab). */
+header.app-header nav a.nav-ext { font-size: 15px; }
+
 .selection-hint {
   display: flex;
   align-items: center;

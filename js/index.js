@@ -90,6 +90,9 @@ function effectivePickupSlots() {
 function renderAll() {
   renderDateNav();
   renderDailyNote();
+  // Read-only-Info aus der Personalplanung (wer ist an diesem Tag abwesend?).
+  // Optional: stört die Mittagsplanung nie, falls das Skript/Firebase mal fehlt.
+  if (window.renderPpPanel) renderPpPanel(selectedDateISO);
 
   const title = document.getElementById("day-title");
   if (!weekdayKey) {

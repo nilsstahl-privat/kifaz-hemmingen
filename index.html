@@ -14,6 +14,7 @@
     <a href="index.html" class="active"><i class="fa-solid fa-calendar-day"></i> Tagesübersicht</a>
     <a href="week.html"><i class="fa-solid fa-calendar-week"></i> Wochenplanung</a>
     <a href="staff.html"><i class="fa-solid fa-users"></i> Personal &amp; Arbeitszeiten</a>
+    <a href="https://kifaz-arbeitszeitplaner.web.app" target="_blank" rel="noopener" class="nav-ext"><i class="fa-solid fa-clipboard-list"></i> Personalplanung &#8599;</a>
   </nav>
 </header>
 <main>
@@ -25,6 +26,7 @@
     <h2 id="day-title">Tagesübersicht</h2>
     <p class="muted">Nur für den gewählten Tag, ohne den dauerhaften Wochenplan zu verändern: Person per <strong>×</strong> am Chip rausnehmen (z.B. krank/verhindert), spontane Zusatzkräfte oder länger Bleibende per Drag &amp; Drop aus der Liste rechts in einen Raum/eine Schicht ziehen. Auch für zukünftige Tage nutzbar, z.B. um einen Ausflug vorab zu planen.</p>
     <div id="date-nav" class="date-nav"></div>
+    <div id="pp-panel" class="pp-panel" style="display:none"></div>
     <textarea id="daily-note" class="daily-note" placeholder="Notiz für diesen Tag (z.B. Ausflug, Besonderheiten) – für alle sichtbar" onchange="onDailyNoteChange(this.value)"></textarea>
     <p class="muted">Bei Gartenwetter: auf "Garten" umschalten – dann gibt es nur noch Küche und Garten, alle anderen Räume werden zusammengefasst. Gilt nur für den gewählten Tag.</p>
     <div id="mode-toggle" class="tabs"></div>
@@ -48,6 +50,7 @@
 <script src="js/data.js"></script>
 <script src="js/rooms.js"></script>
 <script src="js/seed-data.js"></script>
+<script src="js/personalplanung.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>
