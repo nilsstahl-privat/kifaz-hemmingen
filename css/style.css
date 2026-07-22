@@ -1,31 +1,45 @@
 :root {
-  /* Offizielle KiFaZ-Markenfarben */
-  --color-orange: #E55C00;
-  --color-magenta: #CC00FF;
-  --color-yellow: #F2D930;
-  --color-olive: #A5B84E;
-  --color-dark: #24332b;
+  /* Offizielle CI-Farben Gemeinde Hemmingen / KiFaZ (Design-Spec 2024).
+     Die alten Variablennamen bleiben erhalten, sind aber neu belegt – so ziehen
+     alle bestehenden Regeln automatisch auf die neue Palette um. */
+  --color-orange:  #F26522;  /* Begleitfarbe */
+  --color-magenta: #A64BC4;  /* jetzt Violett (Begleitfarbe) */
+  --color-yellow:  #FFE000;  /* Anker */
+  --color-olive:   #6FA82C;  /* jetzt Grün (Begleitfarbe) */
+  --color-dark:    #1D1D1B;  /* Schrift / Basis */
 
-  --color-bg: #f6f5f0;
+  /* Helle Töne (nur Flächen, nie Schrift) */
+  --yellow-soft:  #FFF3B8;
+  --orange-soft:  #FBD9C4;
+  --violet-soft:  #E5D0EE;
+  --green-soft:   #DDEBC6;
+  --neutral-soft: #EDEDE8;
+
+  --color-bg: #fbfaf5;
   --color-card: #ffffff;
-  --color-border: #e7e2d3;
+  --color-border: #e6e5db;
   --color-text: var(--color-dark);
-  --color-muted: #726f60;
+  --color-muted: #55554f;
   --color-primary: var(--color-orange);
   --color-primary-dark: var(--color-dark);
-  /* Aus der Markenfarbe Magenta abgeleitet, aber gedämpft (die reine Markenfarbe
-     wäre als Rahmen/Hintergrund zu grell). */
-  --color-warn: #a916c4;
-  --color-warn-bg: #f8e6fb;
-  --color-conflict: #9c4a28;
+  /* Violett = Unterbesetzung: auffällig, in der Palette, verträgt weiße Schrift. */
+  --color-warn: #A64BC4;
+  --color-warn-bg: #F1E2F6;
+  --color-conflict: #b3431a;
   --radius: 14px;
   --radius-sm: 9px;
 
-  --shadow-sm: 0 1px 2px rgba(36, 51, 43, 0.06), 0 1px 1px rgba(36, 51, 43, 0.04);
-  --shadow-md: 0 4px 14px rgba(36, 51, 43, 0.08), 0 1px 3px rgba(36, 51, 43, 0.06);
+  --shadow-sm: 0 1px 2px rgba(29, 29, 27, 0.06), 0 1px 1px rgba(29, 29, 27, 0.04);
+  --shadow-md: 0 6px 18px rgba(29, 29, 27, 0.10), 0 1px 3px rgba(29, 29, 27, 0.06);
 
-  --font-body: 'Muli', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: 'Bebas Neue', var(--font-body);
+  /* Verläufe – laut Spec ausschließlich Hintergrundflächen, nie im Logo. */
+  --grad-warm:  linear-gradient(120deg, #FFE000 0%, #F26522 100%);
+  --grad-fresh: linear-gradient(120deg, #FFE000 0%, #6FA82C 100%);
+  --grad-wide:  linear-gradient(120deg, #FFE000 0%, #F26522 45%, #A64BC4 100%);
+
+  /* Muli heißt auf Google Fonts heute "Mulish"; wir hosten die Datei selbst. */
+  --font-body: 'Mulish', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-display: 'Bebas Neue', 'Mulish', sans-serif;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -33,40 +47,71 @@
 body {
   margin: 0;
   font-family: var(--font-body);
-  background: linear-gradient(170deg, #f8f6f1 0%, #f5f3ec 45%, #f2ede0 100%) fixed;
+  background: linear-gradient(180deg, #fffdf3 0%, #faf9f2 100%) fixed;
   color: var(--color-text);
   min-height: 100vh;
 }
 
-h1, h2, h3, .room-block-header, .tabs button, header.app-header nav a {
+/* Überschriften: Bebas Neue, Versalien, leicht geöffnete Laufweite (Spec 5.1).
+   Hierarchie über Größe & Farbe, nie über Gewicht (Bebas hat nur einen Schnitt). */
+h1, h2, h3, .brand-title, .room-block-header, .tabs button, header.app-header nav a {
   font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   font-weight: 400;
 }
 
+/* --- Kopfzeile: meshLight-Verlauf (Gelb-Anker + weiche Orange/Grün-Flächen) --- */
 header.app-header {
-  background: linear-gradient(120deg, #fdf6e7 0%, #fbe9cd 55%, #f7ddc5 100%);
   color: var(--color-dark);
-  padding: 16px 24px;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 18px 24px;
   flex-wrap: wrap;
-  box-shadow: 0 2px 10px rgba(36, 51, 43, 0.08);
   position: relative;
   z-index: 1;
+  background:
+    radial-gradient(72% 120% at 6% -10%, rgba(242, 101, 34, 0.40), transparent 55%),
+    radial-gradient(66% 130% at 99% 118%, rgba(111, 168, 44, 0.34), transparent 55%),
+    radial-gradient(55% 130% at 80% -25%, rgba(255, 255, 255, 0.55), transparent 60%),
+    linear-gradient(112deg, #FFE95F 0%, #FFE000 55%, #FFD608 100%);
+  box-shadow: inset 0 -1px 0 rgba(29, 29, 27, 0.12), 0 4px 16px rgba(242, 101, 34, 0.10);
 }
 
-header.app-header h1 {
-  font-size: 24px;
-  margin: 0;
+/* Bildmarke (4 Kapseln) + Wortmarke, linksbündig */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-right: auto;
+  text-decoration: none;
+  color: var(--color-dark);
+}
+.brand-mark {
+  height: 34px;
+  width: auto;
+  flex: none;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(29, 29, 27, 0.22));
+}
+.brand-word { display: flex; flex-direction: column; line-height: 1; }
+.brand-title { font-size: 27px; letter-spacing: 0.045em; color: var(--color-dark); }
+.brand-sub {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-dark);
+  opacity: 0.66;
+  margin-top: 3px;
 }
 
 header.app-header nav {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 header.app-header nav a {
@@ -75,20 +120,20 @@ header.app-header nav a {
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 16px;
-  opacity: 0.7;
+  opacity: 0.82;
   user-select: none;
   touch-action: manipulation;
   transition: background-color 0.15s ease, opacity 0.15s ease, color 0.15s ease;
 }
 
 header.app-header nav a:hover {
-  background: rgba(36, 51, 43, 0.08);
+  background: rgba(29, 29, 27, 0.10);
   opacity: 1;
 }
 
 header.app-header nav a.active {
-  background: var(--color-primary);
-  color: white;
+  background: var(--color-dark);
+  color: #fff;
   opacity: 1;
 }
 
@@ -99,8 +144,8 @@ main {
 }
 
 .fake-db-banner {
-  background: #fff3cd;
-  border: 1px solid #ffe08a;
+  background: var(--yellow-soft);
+  border: 1px solid #f0d98a;
   color: #6b5300;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
@@ -121,21 +166,21 @@ main {
 .card h2 { margin-top: 0; }
 
 /* Read-only-Infobox aus der Personalplanung (siehe js/personalplanung.js):
-   zeigt, wer am gewählten Tag abwesend ist. Rein additiv/optional. */
+   zeigt, wer am gewählten Tag abwesend ist. Warmer Verlauf laut Spec. */
 .pp-panel {
   margin: 10px 0 4px;
   padding: 10px 14px;
-  background: #fdf3e6;
-  border: 1px solid #f2d9b8;
-  border-left: 4px solid var(--color-primary);
+  background: linear-gradient(120deg, var(--orange-soft) 0%, #ffffff 92%);
+  border: 1px solid #f2cdb4;
+  border-left: 4px solid var(--color-orange);
   border-radius: var(--radius-sm);
 }
 .pp-panel .pp-head {
   font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   font-size: 16px;
-  color: var(--color-primary-dark);
+  color: var(--color-dark);
 }
 .pp-panel .pp-src {
   font-family: var(--font-body);
@@ -163,9 +208,9 @@ header.app-header nav a.nav-ext { font-size: 15px; }
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  background: #fdecd2;
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary-dark);
+  background: linear-gradient(120deg, var(--yellow-soft) 0%, var(--orange-soft) 100%);
+  border: 1px solid #f0d59a;
+  color: var(--color-dark);
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   font-size: 14px;
@@ -188,6 +233,7 @@ header.app-header nav a.nav-ext { font-size: 15px; }
   background: white;
   cursor: pointer;
   font-size: 15px;
+  color: var(--color-dark);
   user-select: none;
   touch-action: manipulation;
   transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
@@ -195,10 +241,12 @@ header.app-header nav a.nav-ext { font-size: 15px; }
 
 .tabs button:hover { background: #faf6ee; }
 
+/* Aktiver Zustand = Anker-Gelb mit schwarzer Schrift (Spec: nie weiße Schrift auf Gelb). */
 .tabs button.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
+  background: var(--color-yellow);
+  border-color: #ecc400;
+  color: var(--color-dark);
+  font-weight: 700;
   box-shadow: var(--shadow-sm);
 }
 
@@ -238,7 +286,7 @@ header.app-header nav a.nav-ext { font-size: 15px; }
 .room-block-header {
   font-size: 17px;
   margin-bottom: 10px;
-  color: var(--color-primary-dark);
+  color: var(--color-dark);
 }
 
 .room-block-shifts {
@@ -273,9 +321,9 @@ header.app-header nav a.nav-ext { font-size: 15px; }
 .shift-col.can-drop {
   border-style: solid;
   border-color: var(--color-primary);
-  background: #fff8ef;
+  background: #fff6ee;
   cursor: pointer;
-  box-shadow: 0 0 0 3px rgba(221, 122, 31, 0.12);
+  box-shadow: 0 0 0 3px rgba(242, 101, 34, 0.15);
 }
 
 .shift-col-label {
@@ -352,10 +400,10 @@ header.app-header nav a.nav-ext { font-size: 15px; }
 }
 
 .chip.selected {
-  background: var(--color-primary);
-  border-color: var(--color-primary-dark);
+  background: var(--color-dark);
+  border-color: var(--color-dark);
   color: white;
-  box-shadow: 0 0 0 2px rgba(221, 122, 31, 0.35);
+  box-shadow: 0 0 0 2px rgba(29, 29, 27, 0.25);
 }
 
 .chip-leaves {
@@ -385,9 +433,9 @@ header.app-header nav a.nav-ext { font-size: 15px; }
 .chip-remove:hover { opacity: 1; }
 
 /* Reines Info-Badge (nicht klickbar) – wer heute laut Dropdown-Auswahl
-   die Heimgehkinder-Abholung um 12:20 übernimmt. */
+   die Heimgehkinder-Abholung um 12:20 übernimmt. Gelb-Anker + schwarze Schrift. */
 .chip-pickup-badge {
-  color: var(--color-primary-dark);
+  color: var(--color-dark);
   background: var(--color-yellow);
   font-size: 12px;
   line-height: 1;
@@ -441,7 +489,7 @@ header.app-header nav a.nav-ext { font-size: 15px; }
 }
 
 .daily-note:focus {
-  outline: 2px solid rgba(221, 122, 31, 0.4);
+  outline: 2px solid rgba(242, 101, 34, 0.45);
   outline-offset: 1px;
 }
 
@@ -540,19 +588,19 @@ input[type="text"], select {
 }
 
 input[type="text"]:focus, select:focus, input[type="time"]:focus {
-  outline: 2px solid rgba(221, 122, 31, 0.4);
+  outline: 2px solid rgba(242, 101, 34, 0.45);
   outline-offset: 1px;
 }
 
 button.btn {
   padding: 9px 18px;
   border-radius: 999px;
-  border: 1px solid var(--color-primary);
-  background: var(--color-primary);
+  border: 1px solid var(--color-dark);
+  background: var(--color-dark);
   color: white;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   touch-action: manipulation;
   box-shadow: var(--shadow-sm);
   transition: transform 0.1s ease, box-shadow 0.15s ease;
@@ -565,13 +613,14 @@ button.btn:hover {
 
 button.btn.secondary {
   background: white;
-  color: var(--color-primary-dark);
+  color: var(--color-dark);
+  border-color: var(--color-border);
 }
 
 button.btn.danger {
   background: white;
   border-color: var(--color-warn);
-  color: var(--color-warn);
+  color: #7d2b96;
 }
 
 button.btn.small {
