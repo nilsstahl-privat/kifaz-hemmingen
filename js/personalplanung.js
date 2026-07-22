@@ -93,10 +93,16 @@
     return d.innerHTML;
   }
 
-  // Wird von index.js bei jedem Render/Datumswechsel aufgerufen.
+  // Wird von index.js in renderAll() aufgerufen – LÄUFT VOR dem Rendern des
+  // Raum-Grids. Deshalb hier hart gekapselt: darf unter keinen Umständen eine
+  // Exception werfen, sonst würde die restliche Mittagsplanung nicht mehr rendern.
   window.renderPpPanel = function (dateISO) {
-    currentDateISO = dateISO;
-    rerender();
+    try {
+      currentDateISO = dateISO;
+      rerender();
+    } catch (e) {
+      // Bewusst verschluckt – Zusatzinfo darf die Mittagsplanung nie blockieren.
+    }
   };
 
   function rerender() {
